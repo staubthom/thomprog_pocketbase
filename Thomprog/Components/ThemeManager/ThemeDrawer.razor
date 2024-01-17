@@ -1,0 +1,93 @@
+@using Thomprog.Components.ThemeManager;
+@using Thomprog.Services;
+
+<MudDrawer Anchor="Anchor.Right" @bind-Open="ThemeDrawerOpen" Elevation="25" Variant="@DrawerVariant.Temporary"
+    Width="350px" Height="100vh" >
+    <MudDrawerHeader Class="align-center">
+        <MudText Typo="Typo.h6">
+            Theme Manager
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Color="Color.Default" Icon="@Icons.Material.TwoTone.Close" OnClick="@(() => ThemeDrawerOpenChanged.InvokeAsync(false))"
+             Size="Size.Small" />
+    </MudDrawerHeader>
+    <hr>
+    <MudDivider Style="margin-bottom:10px!important; flex-grow:0" />
+    <div style="padding:20px!important">
+        <MudExpansionPanels DisableBorders="true" Elevation="25">
+               <DarkModePanel OnIconClicked="UpdateThemeDarkMode" />
+               <ColorPanel OnColorClicked="UpdateThemePrimaryColor" Colors="_colors" ColorType="Primary Color"
+                CurrentColor="Color.Primary" />
+                 <ColorPanel OnColorClicked="UpdateThemeSecundaryColor" Colors="_colors" ColorType="Secundary Color"
+                CurrentColor="Color.Secondary" />   
+                 <RadiusPanel Radius= "@PreferenceService.themePreference.borderRadius"
+                OnSliderChanged="UpdateBorderRadius" />             
+        </MudExpansionPanels>
+    </div>
+</MudDrawer>
+
+@code{
+
+    [Parameter]
+    public bool ThemeDrawerOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ThemeDrawerOpenChanged { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public ClientPreference ThemePreference { get; set; } = default!;
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<ClientPreference> ThemePreferenceChanged { get; set; }    
+
+    private readonly List<string> _colors = CustomColors.ThemeColors;
+
+    private async Task UpdateThemePrimaryColor(string color)
+    {
+
+        await PreferenceService.SetThemePrimaryColor(color);       
+        StateHasChanged();
+         if (ThemePreference is not null)
+        {
+            ThemePreference.primaryColor = color;
+            await ThemePreferenceChanged.InvokeAsync(ThemePreference);
+        }
+    }   
+
+    private async Task UpdateThemeSecundaryColor(string color)
+    {
+
+        await PreferenceService.SetThemeSecundaryColor(color);      
+        StateHasChanged();
+         if (ThemePreference is not null)
+        {
+            ThemePreference.secondaryColor = color;
+            await ThemePreferenceChanged.InvokeAsync(ThemePreference);
+        }
+    }    
+
+    private async Task UpdateThemeDarkMode()
+    {
+
+        await PreferenceService.SetDarkMode(PreferenceService.themePreference.isDarkMode); 
+
+        StateHasChanged();
+         if (ThemePreference is not null)
+        {            
+            await ThemePreferenceChanged.InvokeAsync(ThemePreference);
+        }
+    }    
+
+    private async Task UpdateBorderRadius(int radius)
+    {
+
+       await PreferenceService.SetThemeBorderRadius(radius);  
+        if (ThemePreference is not null)
+        {
+            ThemePreference.borderRadius = radius;
+            await ThemePreferenceChanged.InvokeAsync(ThemePreference);
+        }
+    }
+}

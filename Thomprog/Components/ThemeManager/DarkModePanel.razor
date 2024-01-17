@@ -1,0 +1,35 @@
+@using Thomprog.Services;
+<MudExpansionPanel HideIcon="true">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center;">
+            @if (PreferenceService.themePreference.isDarkMode)
+            {
+                <MudText Class="mt-1">Light Mode</MudText>
+            }
+            else
+            {
+                <MudText Class="mt-1">Dark Mode</MudText>
+            }
+            <MudToggleIconButton @bind-Toggled="PreferenceService.themePreference.isDarkMode" Icon="@Icons.Material.TwoTone.WbSunny"
+                Color="@Color.Warning" Title="Off" Class="d-flex ml-auto" ToggledIcon="@Icons.Material.TwoTone.DarkMode"
+                ToggledColor="@Color.Surface" ToggledTitle="On" style="left:8px!important" @onclick="@ToggleDarkMode" />
+        </div>
+    </TitleContent>
+</MudExpansionPanel>
+
+@code{
+bool _isDarkMode;
+    protected override async Task OnInitializedAsync()
+    {
+         _isDarkMode = PreferenceService.isDarkMode;
+    }
+    [Parameter]
+    public EventCallback<bool> OnIconClicked { get; set; }
+
+    private async Task ToggleDarkMode() {        
+
+       await OnIconClicked.InvokeAsync();
+
+    }
+}
+

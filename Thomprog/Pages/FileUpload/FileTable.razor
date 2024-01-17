@@ -1,0 +1,236 @@
+@using Microsoft.AspNetCore.Components.Forms
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject NavigationManager UriHelper
+@using Thomprog.Shared.Helper
+@using Thomprog.Models
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+
+@using System;
+@using System.IO;
+@using System.Net;
+@using Thomprog.Pages.Editor;
+@using Thomprog.Pages.Viewer;
+
+<MudTable Items="@filesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
+          SortLabel="Sort By" T="FileuploadModel ">
+    <ToolBarContent>
+        <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.TwoTone.Search"
+                      IconSize="Size.Medium" Class="mt-0" Clearable="true"
+                      ValueChanged="@(s=>OnValueChangedSearch(s))" Placeholder=@L["Search"] />
+    </ToolBarContent>
+    <HeaderContent>
+
+        <MudTh>
+            @L["Download"]
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<FileuploadModel , object>(x=>x.name)">
+                @L["Name"]
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            @L["Updated"]
+        </MudTh>
+        <MudTh>
+            @L["Action"]
+        </MudTh>
+        <MudTh>
+            @L["Delete"]
+        </MudTh>
+
+    </HeaderContent>
+    <RowTemplate>
+
+        <MudTd DataLabel="Download">
+            <MudIconButton Icon="@Icons.Material.TwoTone.Download" aria-label="download" Size="Size.Small"
+                           OnClick="@(async (_) => {await DownloadClick(context);})" />
+        </MudTd>
+
+        <MudTd DataLabel="Title">@context?.name</MudTd>
+            <MudTd DataLabel="Updated">@context?.Updated</MudTd>
+
+            <MudTd DataLabel="Action">
+                @if (Path.GetExtension(context.name) == ".mp3")
+            {
+
+                <MudStack Row="true">
+                    <MudIconButton Icon="@Icons.Material.TwoTone.VolumeUp" aria-label="download" Size="Size.Small"
+                                   OnClick="@(async (_) => {await PlayAudio(context);})" />
+
+                    <audio id="@context.Id" controls controlsList="nodownload">
+                        <source src="" type="audio/mpeg">
+                    </audio>
+                </MudStack>
+
+            }
+            else if (Path.GetExtension(context.name) == ".png" || Path.GetExtension(context.name) == ".jpg" || Path.GetExtension(context.name) == ".gif")
+            {
+
+                //OnClick = "@(async (_) => {await OpenImage(context);})"
+
+                <MudAvatar Square="true">
+                    <MudImage Src="@($"{url}api/files/{context.CollectionId}/{context.Id}/{context.file}")" Alt=""></MudImage>
+                </MudAvatar>
+            }
+            else if (Path.GetExtension(context.name) == ".html")
+            {
+
+                if (!context.no_edit.GetValueOrDefault())
+                {
+                    <MudIconButton OnClick="@(async (_) => {await OpenEditor(context);})" Icon="@Icons.Material.TwoTone.EditNote" aria-label="Show"></MudIconButton>
+                }
+              
+                <MudIconButton OnClick="@(async (_) => {await OpenViewer(context);})" Icon="@Icons.Material.Filled.RemoveRedEye" aria-label="Show"></MudIconButton>
+            }
+
+            else
+            {
+                <td>No Action</td>
+            }
+        </MudTd>
+        <MudTd DataLabel="Delete">
+            <MudFab Color="Color.Error" Size="Size.Small" StartIcon="@Icons.Material.TwoTone.DeleteForever" @onclick="@(()=>delete(context))" />
+        </MudTd>
+
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+    </PagerContent>
+</MudTable>
+
+@code {
+
+    [Parameter] public bool? ShouldReRender { get; set; }
+
+    [Parameter] public string? collectionName { get; set; } = "files";
+
+     [Parameter]
+    public string virtualFolder { get; set; } = "";
+
+    [Inject]
+    Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
+    public PocketBaseOptions pocketBaseOptions = new();
+    private string url;
+
+    FileuploadModel fileUpload = new();
+    private IReadOnlyList<FileuploadModel>? filesList { get; set; }
+    private IReadOnlyList<FileuploadModel>? filesListFiltered { get; set; }
+    private MudTable<FileuploadModel>? _table;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetTable();
+        url = pocketBaseOptions.BaseUrl;
+
+    }
+
+    public async Task GetTable()
+    {
+      
+        var ienum = await DatabaseService.GetCollection<FileuploadModel>(collectionName, filter: $"virtualFolder='{virtualFolder}'");
+        IReadOnlyList<FileuploadModel> files = ienum.ToList();
+        
+        filesList = files;
+        filesListFiltered = files;
+        StateHasChanged();
+    }
+
+    private void OnValueChangedSearch(string text)
+    {
+        filesListFiltered = filesList?.Where(row => row.name.Contains(text)).ToList();
+    }
+
+    private async Task delete(FileuploadModel file)
+    {
+        bool delete = false;
+
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            "Deleting can not be undone!",
+            yesText: "Delete!", cancelText: "Cancel");
+
+        delete = result == null ? false : true;
+
+        if (delete)
+        {
+
+            var filename = await DatabaseService.Delete<FileuploadModel>(collectionName, file);
+
+            Snackbar.Add("File Deleted:");
+            await GetTable();
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadClick(FileuploadModel file)
+    {
+
+        var fileStream = await DatabaseService.DownloadFileAsync(collectionName, file.Id, file.file);
+        var fileName = file.name;
+
+        byte[] fileBytes;
+        using (MemoryStream ms = new MemoryStream())
+        {
+            await fileStream.CopyToAsync(ms);
+            fileBytes = ms.ToArray();
+        }
+
+        // Datei herunterladen
+        await JSRuntime.InvokeVoidAsync("BlazorDownloadFile.saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+
+    }
+
+    private async Task OpenEditor(FileuploadModel file)
+    {
+
+        DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var parameters = new DialogParameters();
+
+        parameters.Add("file", file);
+
+        var dialog = DialogService.Show<EditorDialog>("Edit File", parameters, options);
+        var result = await dialog.Result;
+        await GetTable();
+        StateHasChanged();
+
+    }
+
+
+    private async Task OpenViewer(FileuploadModel file)
+    {
+
+        DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var parameters = new DialogParameters();
+
+        parameters.Add("file", file);
+
+        var dialog = DialogService.Show<ViewerDialog>("Edit File", parameters, options);
+        var result = await dialog.Result;
+        await GetTable();
+        StateHasChanged();
+
+    }
+
+    private async Task OpenImage(FileuploadModel file)
+    {
+
+    }
+
+    private async Task PlayAudio(FileuploadModel file)
+    {
+
+        //var result = await PocketBase.Collection("files").DownloadFileAsync(file.Id, file.file);
+        var fileStream = await DatabaseService.DownloadFileAsync(collectionName, file.Id, file.file);
+
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+        
+        await JSRuntime.InvokeVoidAsync("PlayAudio", streamRef, file.Id);
+
+    }
+
+}

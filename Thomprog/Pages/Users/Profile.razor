@@ -1,0 +1,263 @@
+@using Thomprog.Models
+@using Thomprog.Shared.Helper;
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+
+@inject DatabaseService DatabaseService
+@inject IDialogService DialogService
+<MudGrid>
+
+   <MudItem xs="12" sm="12" md="4">
+        <MudCard Elevation="25">
+            <MudCardContent Style="padding:0px!important">
+                <div class="d-flex justify-center mb-4">
+                    @if (!string.IsNullOrEmpty(_imageUrl))
+                    {
+                        <MudAvatar Square="true" Image="@_imageUrl" Style=" width:100%;height:auto;"> </MudAvatar>
+                    }
+                    else
+                    {
+                        <MudAvatar Square="true" Color="Color.Primary" Style="width:100%;height:300px">@_firstLetterOfFirstName @_firstLetterOfName </MudAvatar>
+                    }
+
+                </div>
+                <MudText Typo="Typo.h6" Align="Align.Center">@first_name @last_name</MudText>
+                <MudText Align="Align.Center">@email</MudText>
+            </MudCardContent>
+            <MudCardActions Class="d-flex justify-center">
+                <InputFile id="fileInput" OnChange="UploadFiles" hidden accept=".jpg,.jpeg,.png" />
+                <div style="padding-bottom:20px">
+                <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                    StartIcon="@Icons.Material.TwoTone.CloudUpload" for="fileInput">
+                    Upload
+                     </MudButton>
+                @if(!string.IsNullOrEmpty(_imageUrl))
+                {                  
+
+                    <MudButton HtmlTag="label" DisableElevation Variant="Variant.Filled" Color="Color.Error" Size="Size.Small"
+                        StartIcon="@Icons.Material.TwoTone.Delete" OnClick="RemoveImageAsync" Style="margin-left: 5px;" >
+                        @L["Delete"]
+                    </MudButton>
+                }
+
+                    </div>
+
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="12" md="8">      
+            <MudCard Elevation="25">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText>@L["Profile Details"]</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                       <MudItem xs="12" md="6">
+                           <MudTextField @bind-Value="first_name" Label=@L["First Name"] Variant="Variant.Outlined" ></MudTextField>
+                       </MudItem>
+                       <MudItem xs="12" md="6">
+                           <MudTextField @bind-Value="last_name" Label=@L["Last Name"] Variant="Variant.Outlined" ></MudTextField>
+                       </MudItem>
+                       <MudItem xs="12" md="6">
+                           <MudTextField @bind-Value="phone" Label=@L["Phone"] Variant="Variant.Outlined" ></MudTextField>
+                       </MudItem>
+                       <MudItem xs="12" md="6">
+                           <MudTextField @bind-Value="email" Label=@L["Email"] Variant="Variant.Outlined" Disabled=true></MudTextField>
+                       </MudItem>         
+
+                    </MudGrid>
+                </MudCardContent>
+                 <MudCardActions Class="pb-4 pl-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" StartIcon="@Icons.Material.TwoTone.Save" @onclick="UpdateProfileAsync"
+                       >@L["Save Changes"]</MudButton>
+                </MudCardActions>
+
+            </MudCard>
+
+    </MudItem>
+
+</MudGrid>
+
+    @code {
+
+    [Inject]
+    Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
+    [Inject]
+    public PocketBase PocketBase { get; set; } = null!;
+    public PocketBaseOptions pocketBaseOptions = new();
+
+    private string? _imageUrl;
+    private string? userId;
+    private string Id;
+    private string? email;
+    private string? first_name;
+    private string? last_name;
+    private string? phone;
+    private string? CollectionId;
+    private char _firstLetterOfName;
+    private char _firstLetterOfFirstName;
+    private string? avatar;
+
+    protected override async Task OnInitializedAsync()
+    {      
+        await GetTable();
+    }
+
+    private List<Profiles>?  _profileModel { get; set; }
+
+    protected async Task GetTable()
+    {
+        // await Task.Delay(10000);
+        var userid = await localStorage.GetItemAsync<string>("Id");        
+
+        var profiles_ienum = await DatabaseService.GetRecordByUserId<Profiles>("profiles", userid);
+        List<Profiles> profiles = profiles_ienum.ToList();
+        foreach (var item in profiles)
+        {
+            Id =item.Id;
+            userId =item.user_id;
+            email = item.email;
+            first_name = item.first_name;
+            last_name = item.last_name; 
+            phone = item.phone; 
+            CollectionId = item.CollectionId;
+            avatar = item.avatar;            
+            if (!string.IsNullOrEmpty(avatar))
+            {
+                _imageUrl = pocketBaseOptions.BaseUrl + "api/files/" + item.CollectionId + "/" + item.Id + "/" + item.avatar;
+            }
+            else
+            {
+                _imageUrl = "";
+            }
+
+            Console.WriteLine(_imageUrl);
+            if (first_name?.Length > 0)
+            {
+                _firstLetterOfFirstName = first_name.ToUpper().FirstOrDefault(); 
+                _firstLetterOfName = last_name.ToUpper().FirstOrDefault();
+            }
+
+        } 
+        StateHasChanged();
+    }
+
+    protected Profiles Model = new();
+    private async Task UpdateProfileAsync()
+    {        
+        Model.Id=Id;
+        Model.user_id=userId;
+        Model.email = email;
+        Model.first_name = first_name;
+        Model.last_name = last_name; 
+        Model.phone = phone;
+        Model.avatar = avatar;     //pocketBaseOptions.BaseUrl + "api / files / " + CollectionId + " / " + Id + " / logo_zrKRoOGZPW.svg";// _imageUrl;
+
+        await DatabaseService.Update<Profiles>("profiles", Model);
+
+        Snackbar.Add("Your Profile has been updated. Please Login again to Continue.", Severity.Success);
+        GetTable();
+    }
+
+    public async Task RemoveImageAsync()
+    {
+        string deleteContent = "You're sure you want to delete your Profile Image?";
+        var parameters = new DialogParameters
+        {
+            { nameof(DeleteConfirmation.ContentText), deleteContent }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true };
+        var dialog = DialogService.Show<DeleteConfirmation>("Delete", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            avatar = "";
+            await UpdateProfileAsync();
+        }
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file is not null)
+        {
+            string? extension = Path.GetExtension(file.Name);
+            if (!ApplicationConstants.SupportedImageFormats.Contains(extension.ToLower()))
+            {
+                Snackbar.Add("Image Format Not Supported.", Severity.Error);
+                return;
+            }
+            var imageFile = await file.RequestImageFileAsync(ApplicationConstants.StandardImageFormat, ApplicationConstants.MaxImageWidth, ApplicationConstants.MaxImageHeight);
+
+            //IBrowserFile browserFile = e.File;// Ihr IBrowserFile-Objekt hier
+
+            IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = FileUploadHelper.ConvertToIFileEnumerable(imageFile, "avatar");
+
+            if (file is not null)
+            {
+                Model.Id = Id;
+                //var response = await PocketBase.Collection("profiles").CreateAsync<Profiles>(Model, files: fileEnumerable);
+                //var response = await PocketBase.Collection("profiles").UpdateAsyncWithFile<Profiles>(Model, files: fileEnumerable);
+                var response = await DatabaseService.UpdateAsyncWithFile<Profiles>("profiles", Model, fileEnumerable);
+            }
+            GetTable();
+        }
+
+        /*  var file = e.File;
+         if (file is not null)
+         {
+             string? extension = Path.GetExtension(file.Name);
+             if (!ApplicationConstants.SupportedImageFormats.Contains(extension.ToLower()))
+             {
+                 Snackbar.Add("Image Format Not Supported.", Severity.Error);
+                 return;
+             }
+             string? fileName = $"{userId}-{Guid.NewGuid():N}";
+             fileName = fileName[..Math.Min(fileName.Length, 90)];
+             var imageFile = await file.RequestImageFileAsync(ApplicationConstants.StandardImageFormat, ApplicationConstants.MaxImageWidth, ApplicationConstants.MaxImageHeight);
+             byte[]? buffer = new byte[imageFile.Size];
+             await imageFile.OpenReadStream(ApplicationConstants.MaxAllowedSize).ReadAsync(buffer);
+             string? base64String = $"data:{ApplicationConstants.StandardImageFormat};base64,{Convert.ToBase64String(buffer)}";
+             Console.WriteLine(base64String);
+             _imageUrl = base64String;
+
+             ByteArrayContent byteArrayContent = new ByteArrayContent(buffer, 0, buffer.Length);
+             var image = byteArrayContent;
+             MultipartFormDataContent form = new MultipartFormDataContent();
+
+             Model.Id = Id;
+             Model.user_id = userId;
+             Model.email = email;
+             Model.first_name = first_name;
+             Model.last_name = last_name;
+             Model.phone = phone;
+             Model.avatar = file;
+
+             await DatabaseService.Update<Profiles>("profiles", Model);
+
+             Snackbar.Add("Your Profile has been updated. Please Login again to Continue.", Severity.Success);
+
+             //await UpdateProfileAsync();
+
+             */
+    }
+
+public static class ApplicationConstants
+    {
+        public static readonly List<string> SupportedImageFormats = new()
+        {
+            ".jpeg",
+            ".jpg",
+            ".png"
+        };
+        public static readonly string StandardImageFormat = "image/jpeg";
+        public static readonly int MaxImageWidth = 2500;
+        public static readonly int MaxImageHeight = 2500;
+        public static readonly long MaxAllowedSize = 20000000; // Allows Max File Size of 20 Mb.
+    }
+}

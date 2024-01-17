@@ -1,0 +1,132 @@
+﻿@page "/details/{Id}"
+@using Thomprog.Models;
+@using Thomprog.Components.Dialog;
+<MudPaper Class="pa-4 ">
+    <ThomTitle Title=@L["To-Do List"] Description=@L["Manage your To-do's"] />
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+                <MudFab Color="Color.Default" StartIcon="@Icons.Material.TwoTone.ArrowLeft" Size="Size.Small" OnClick="() => GoBack()" />
+                <MudFab StartIcon="@Icons.Material.TwoTone.Add" Color="Color.Primary" Size="Size.Small" OnClick="AddNewEntry" />
+
+        </CardHeaderContent>          
+        <CardHeaderActions>
+                <MudIconButton Icon="@Icons.Material.TwoTone.Refresh" Color="Color.Default" OnClick="OnParametersSetAsync" />
+
+        </CardHeaderActions>
+    </MudCardHeader>
+
+    @if (_entries is null)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            <MudSkeleton />
+        }
+    }
+    else
+    {
+        <MudList>
+            @foreach (var item in _entries)
+            {
+                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                    <MudCheckBox @bind-Checked="item.isDone"></MudCheckBox>
+                    <MudTextField @bind-Value="item.name" Label="" Variant="Variant.Text" style="@(item.isDone ? "text-decoration: line-through;" : "")"> </MudTextField>
+                        <MudStack Row="true" Spacing="3">
+                            <MudFab StartIcon="@Icons.Material.TwoTone.Delete" Size="Size.Medium" Color="Color.Error" OnClick="() => Remove(item)" />
+                                <div style="margin:2px"></div>
+
+                    </MudStack>
+                </MudStack>
+            }
+        </MudList>
+        <MudCardActions>
+
+            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                    <MudFab StartIcon="@Icons.Material.TwoTone.Add" Color="Color.Primary" OnClick="AddNewEntry" />
+                <MudStack Row="true" Spacing="0">
+                        <MudFab StartIcon="@Icons.Material.TwoTone.Save" Color="Color.Primary" OnClick="SaveAsync" />
+                </MudStack>
+            </MudStack>
+
+        </MudCardActions>
+    }
+</MudCard>
+</MudPaper >
+@code{
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Inject]
+    public PocketBase PocketBase { get; set; } = null!;
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = null!;
+
+    private List<TodoEntryModel>? _entries;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadEntriesAsync();
+        await base.OnParametersSetAsync();
+    }
+
+    private void GoBack()
+    {
+        var path = $"/todo/";
+        NavigationManager.NavigateTo(path);
+    }
+
+    protected async Task LoadEntriesAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Id))
+        {
+            return;
+        }
+        var result = await DatabaseService.GetCollection<TodoEntryModel>("todos_lists", filter: $"todoId='{Id}'");
+
+        _entries = result.ToList();
+
+    }
+
+    protected void AddNewEntry()
+    {
+        if (_entries is null)
+        {
+            return;
+        }
+        _entries.Add(new TodoEntryModel());
+    }
+
+    protected async Task Remove(TodoEntryModel item)
+    {
+        if (_entries is null)
+        {
+            return;
+        }
+        await DatabaseService.Delete<TodoEntryModel>("todos_lists", item);
+        await LoadEntriesAsync();
+    }
+
+    protected async Task SaveAsync()
+    {
+        if (_entries is null)
+        {
+            return;
+        }
+        foreach (var item in _entries)
+        {
+            
+            item.todoId = Id;
+            if (item.CollectionId is not null)
+            {
+                await DatabaseService.Update<TodoEntryModel>("todos_lists", item);
+            }
+            else
+            {
+                await DatabaseService.Insert<TodoEntryModel>("todos_lists", item);
+            }
+            await LoadEntriesAsync();
+
+        }
+    }
+ }

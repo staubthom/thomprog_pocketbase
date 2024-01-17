@@ -1,0 +1,75 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>fd23fba6-03b7-4047-8686-dc3d7ef8e733</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Pages\SharedComponents\TodoListEntries.razor.cs" />
+    <Compile Remove="Services\PocketBaseExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\CrudPagePrivate.razor" />
+    <Content Remove="Pages\FileUpload\FileUpload - Kopieren.razor" />
+    <Content Remove="wwwroot\LocalStorageInterop.js" />
+  </ItemGroup>
+
+  <PropertyGroup>
+		<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Components\ThemeManager\ColorPanel.razor" />
+    <None Include="Components\ThemeManager\DarkModePanel.razor" />
+    <None Include="Components\ThemeManager\RadiusPanel.razor" />
+    <None Include="Components\ThemeManager\ThemeButton.razor" />
+    <None Include="Components\ThemeManager\ThemeDrawer.razor" />
+    <None Include="wwwroot\editor\editor.js" />
+    <None Include="wwwroot\editor\icons\card-text.svg" />
+    <None Include="wwwroot\editor\icons\color-text.svg" />
+    <None Include="wwwroot\editor\icons\note-light.svg" />
+    <None Include="wwwroot\editor\icons\text-background-color.svg" />
+    <None Include="wwwroot\editor\Readme.md" />
+    <None Include="wwwroot\js\recorder\AudioRecorder.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="MudBlazor" Version="6.12.0" />
+    <PackageReference Include="MudBlazor.ThemeManager" Version="1.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>   
+   
+    <ProjectReference Include="..\pocketbase-csharp-sdk\pocketbase-csharp-sdk.csproj" />
+  </ItemGroup>
+
+ 
+
+  <ItemGroup>
+    <Content Update="wwwroot\appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\SharedComponents\" />
+  </ItemGroup>
+
+</Project>

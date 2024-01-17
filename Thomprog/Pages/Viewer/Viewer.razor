@@ -1,0 +1,261 @@
+
+@using System.Net.Http;
+@using System.Threading.Tasks;
+@using System.Text
+@using Thomprog.Pages.FileUpload;
+@using Thomprog.Shared.Helper
+@using Thomprog.Models
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+@using System;
+@using System.IO;
+@using System.Net;
+
+@inject IJSRuntime JSRuntime
+
+@inject IDialogService DialogService
+
+@inject ISnackbar Snackbar
+@inject IJSRuntime Js
+@inject NavigationManager NavigationManager
+
+<MudPaper Class="d-flex align-center  mud-width-full py-8 ">
+    <div style="margin-left: 20px; margin-right:20px">
+   <div id="editor">
+        @((MarkupString)myMarkup)
+                  </div>
+                  </div>
+
+</MudPaper>
+
+
+
+
+
+<style scoped>
+p{
+  font-size:1.2em;line-height:1.2em;
+}
+
+/*Verszahlen in Bibeltexten*/
+.vers  {
+       color:#9b9b9b;
+       font-size:0.8em;       
+       font-weight:bold;
+       }
+/*Kapitelzahlen in Bibeltexten*/
+.kap        {
+        color: #585250;
+         font-style: normal;
+         font-size: 1.5em;
+         font-weight: bold;
+         line-height: 1.1em;
+         }
+/*Zusaetze*/
+.zu      {
+         color: #707070;
+         }
+/*Fussnoten*/
+.fn   {
+      color:#9b9b9b;
+      font-size:0.9em;
+      line-height:1.2em;
+      margin-top:0.8em;
+      margin-left:1em;
+      margin-right:2.5em;
+      text-align:left;
+      }
+/*Poetische Texte*/
+.einl {
+      font-style:italic;
+      text-align:left;
+      }
+.poet {
+      text-align:left;
+      }
+/*Buchueberschrift*/
+.u0 {font-size:1.8em;font-weight:bold;text-align:left;}
+/*Einleitungstext*/
+.e   { font-size:1.1em;line-height:1.2em;margin-bottom:0.5em;text-align: justify;
+      padding: 11.5px 23px;
+      margin: 0 0 23px;
+      font-size: 16.25px;
+    }
+
+/*Bucherklaerung*/
+.u1 {font-size:1.5em;text-align:left;}
+/*Zwischenueberschrift*/
+.u2 {font-size:1.1em;  font-weight:bold; text-align:left;}
+/*Kapitellinks*/
+p.u3 a
+{
+  color: rgb(211, 211, 211);
+}
+.u3 {font-size:1.2em;line-height:1.6em;font-weight:bold;text-align:left;}
+.w { color:#FFFFFF;font-weight:bold; }
+.g { color:#FF7F00;font-weight:bold; }
+
+
+/*Kapitelziffern */
+.k { color:#C00040;font-size:3em;font-weight:bold;line-height:17pt; }
+.rot { color:#C00040; }
+.f { color:#0000FF;font-size:9px;font-weight:normal; }
+a { text-decoration:none; }
+
+a:hover { background-color:#bbbbbb; }
+a:active { color:#00ff0d; }
+a:focus { color:#0000E0; } 
+
+
+
+
+
+/*Kopfbereich mit Bild */
+.container {    
+      display: grid;
+      grid-template-rows: 200px ;
+      grid-template-columns: 100%;
+      grid-template-areas:        
+          "content"
+          "sidebar"        
+      ;
+  }
+
+  @@media screen and (min-width: 960px) {
+  
+      .container {
+          grid-template-rows: 200px, 200px;
+          grid-template-columns: 25% 25% 25% 25%;
+          grid-template-areas:            
+              "content content content sidebar"
+            
+          ;
+      }
+  
+  }  
+  #article {
+      background:#83817E;
+      grid-area: content;
+      color:whitesmoke;
+      padding-left: 10px;
+  }  
+  #aside {
+     height: 200px;
+      background:#83817E;
+      grid-area: sidebar;
+      background-image:url('@headerimage');
+        background-size:contain;
+        background-repeat: no-repeat; 
+        background-position:bottom;
+        background-position:right;
+        
+        float: right;   
+        overflow: auto; 
+  }
+  #bg{
+        background-image:url('https://bible.lerntool.ch/img/bg.png');
+        padding: 10px;
+        margin-bottom: 20px;
+        color: #585250;
+     }  
+
+.picture
+{
+
+  padding-right: 10px;
+}
+
+
+.hide {
+  display: none;
+}
+
+.myNote:hover + .hide {
+  display: block;
+  color: red;
+}
+
+
+   </style>
+
+
+
+@code {
+
+    [Parameter]
+    public FileuploadModel file { get; set; } = new();
+
+
+     private string myMarkup = "";
+     
+   
+   
+   public string headerimage ="";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (file.Id == null)
+        {           
+
+            file.name = "Note.html";            
+            file.filetype = ".html";
+            file.virtualFolder = "file"; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+            file.CollectionName = "files";
+            file.Id = "";
+            file.file = "";
+
+        }
+        else
+        {
+           
+
+            await load_html();
+        }
+
+    }
+
+   
+
+    public async Task<Stream> GenerateStreamFromString(string s)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream, Encoding.UTF8);
+        writer.Write(s);
+        writer.Flush();
+        stream.Position = 0;
+        return stream;
+    }
+
+    
+    private async Task load_html()
+    {
+        //isLoading=true;
+
+        if (file.Id != "")
+        {
+            var fileStream = await DatabaseService.DownloadFileAsync(file.CollectionName, file.Id, file.file);
+            //var fileName = file.name;
+           
+
+            byte[] fileBytes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await fileStream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            myMarkup = System.Text.Encoding.Default.GetString(fileBytes).Trim(new char[] { '\uFEFF' }); ; // Entfern BOM Byte Order Mark
+
+           
+
+           
+
+        }
+
+       
+        StateHasChanged();
+    }
+
+    
+}

@@ -1,0 +1,29 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.JSInterop
+@using Thomprog
+@using Thomprog.Shared
+@using Thomprog.Components
+@using MudBlazor
+@using pocketbase_csharp_sdk
+@using Thomprog.Services
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+
+
+
+
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject DatabaseService DatabaseService
+@inject PreferenceService PreferenceService
+@inject RightsService RightsService
+@inject IStringLocalizer<App> L

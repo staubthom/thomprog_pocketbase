@@ -1,0 +1,16 @@
+﻿@using Thomprog.Models
+<h3>EditorDialog</h3>
+
+<Editor  file="file"  />
+
+@code {
+    [Parameter]
+    public FileuploadModel file { get; set; } = new();
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+   private async Task close()
+    {
+         MudDialog.Cancel();
+    }
+}

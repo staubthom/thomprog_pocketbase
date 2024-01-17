@@ -1,0 +1,81 @@
+@using Thomprog.Models
+@using Thomprog.Services;
+
+@using MudBlazor;
+
+@inject DatabaseService DatabaseService;
+<!-- Gebraucht für Validierung -->
+@using System.ComponentModel.DataAnnotations;  
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@ContentText</MudText>         
+       <!--  <MudTextField @bind-Value="@FirstName" Label="First Name" /> -->
+         <!--  <MudTextField @bind-Value="@LastName" Label="Last Name" />  -->
+            <MudTextField @bind-Value="@UserName" Label=@L["Username"] />
+        <MudTextField @bind-Value="@Email" Label=@L["Email"] />
+        <!--   <MudTextField @bind-Value="@Phone" Label="Phone Nummer" />  -->       
+         <MudTextField @bind-Value="Password" Label=@L["Password"] Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonPasswordclick" AdornmentAriaLabel="Show Password" />
+         <MudTextField @bind-Value="Password1" Label=@L["Password"] Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonPasswordclick" AdornmentAriaLabel="Show Password" />
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@L["Cancel"]</MudButton>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit" StartIcon="@Icons.Material.TwoTone.Save">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+    @code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string ContentText { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+    [Parameter] public string UserName { get; set; }
+    [Parameter] public string FirstName { get; set; }
+    [Parameter] public string LastName { get; set; }
+    [Parameter] public string Email { get; set; }
+    [Parameter] public string Phone { get; set; }
+    [Parameter] public string Password { get; set; }
+    [Parameter] public string Password1 { get; set; }
+    [Parameter] public Color Color { get; set; }
+
+    protected Profiles Model = new();
+
+    public async Task Submit() 
+    {
+
+        if (Password==Password1)
+        {
+
+            await DatabaseService.CreateUser(UserName, Password, Email);
+
+             Snackbar.Add("Successful Createt", Severity.Success);   
+             MudDialog.Close(DialogResult.Ok(true));  
+
+        }
+        else
+        {
+                Snackbar.Add("Passwort stimmt nicht überein",Severity.Error);
+
+        }
+
+    } 
+
+    void Cancel() => MudDialog.Cancel();
+
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.TwoTone.VisibilityOff;
+     void ButtonPasswordclick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.TwoTone.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.TwoTone.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+}

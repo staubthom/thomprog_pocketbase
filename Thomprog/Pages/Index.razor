@@ -1,0 +1,164 @@
+﻿@page "/"
+@using Thomprog.Models
+@inject IJSRuntime JSRuntime
+@using pocketbase_csharp_sdk.Models;
+@using  pocketbase_csharp_sdk.Models.Files
+@using Thomprog.Shared.Helper
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+@using System;
+@using System.IO;
+@using System.Net;
+@using Thomprog.Pages.FileUpload;
+
+
+<PageTitle>Index</PageTitle>
+<MudPaper Class="pa-4 ">
+    <ThomTitle Title=@L["Dashboard"] Description=@L["Realtime Updates"] />
+
+ <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="25" Class="d-flex flex-row pt-6 pb-4" Style="height:100px;">
+                <MudIcon Icon="@Icons.Material.TwoTone.Storage" Color="Color.Primary" Class="mx-4"
+                Style="width:54px; height:54px;"></MudIcon>
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">@L["Tasks"]</MudText>
+                    <MudText Typo="Typo.h5">@tasks</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="25" Class="d-flex flex-row pt-6 pb-4" Style="height:100px;">
+                    <MudIcon Icon="@Icons.Material.TwoTone.UploadFile" Color="Color.Secondary" Class="mx-4"
+                Style="width:54px; height:54px;"></MudIcon>
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">@L["Files"]</MudText>
+                    <MudText  Typo="Typo.h5">@files</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="25" Class="d-flex flex-row pt-6 pb-4" Style="height:100px;">
+                <MudIcon Icon="@Icons.Material.TwoTone.Face" Color="Color.Success" Class="mx-4"
+                Style="width:54px; height:54px;"></MudIcon>
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">@L["Registered Users"]
+                    </MudText>
+                    <MudText Typo="Typo.h5">@user</MudText>
+                    <!--  <MudButton Color="Color.Error" OnClick="@(() => Test())">Test</MudButton> -->
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="25" Class="d-flex flex-row pt-6 pb-4" Style="height:100px;">
+                    <MudIcon Icon="@Icons.Material.TwoTone.KeyboardVoice" Color="Color.Warning" Class="mx-4"
+                Style="width:54px; height:54px;"></MudIcon>
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">@L["Registered Roles"]
+                    </MudText>
+                    <MudText Typo="Typo.h5">@records</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+            <MudItem xs="12" sm="12" md="12">
+             <MudPaper Class="pa-4" Outlined="true">
+        <AuthorizeView>
+            <Authorized>
+                <MudText Typo="Typo.h6">["Auth test area."]</MudText>
+                        <MudText Typo="Typo.body1">
+
+                        </MudText>
+            </Authorized>
+            <NotAuthorized>
+                        <MudText Typo="Typo.h6">["You are not Auth."]</MudText>
+                <br>
+                <MudText Typo="Typo.body1">["You are not allowed to see this content"]</MudText>
+                <br>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/login">Login</MudButton>
+            </NotAuthorized>
+        </AuthorizeView>        
+            </MudPaper>
+        </MudItem>
+
+         <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%"></MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+        </MudItem>
+
+       
+    </MudGrid>
+    
+
+
+
+
+</MudPaper> 
+
+@code {
+
+    [Inject]
+    public PocketBase PocketBase { get; set; } = null!;
+
+    [Inject]
+    Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+    private string data = "Hello from Blazor!";
+    private int user;
+    private int files;
+    private int tasks;
+    private int records;
+
+    protected Profiles Model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = await DatabaseService.GetCollectionCount<Thomprog.Models.TodoModel>("todos");
+        files = await DatabaseService.GetCollectionCount<Thomprog.Models.FileuploadModel>("files");
+        user = await DatabaseService.GetCollectionCount<Thomprog.Models.Profiles>("profiles");
+        records = await DatabaseService.GetCollectionCount<Thomprog.Models.Profiles>("audio");
+
+
+
+
+    }
+
+    
+   
+
+    public async Task Test(InputFileChangeEventArgs e)
+    {
+
+       
+
+    }
+
+}
+

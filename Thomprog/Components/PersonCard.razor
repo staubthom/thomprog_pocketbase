@@ -1,0 +1,99 @@
+﻿
+
+<MudCard Elevation="0" Square="true" Class="@Class" Style="@Style">
+    <MudCardHeader style="padding:10px!important">
+        <CardHeaderAvatar>
+            @if (string.IsNullOrEmpty(this.ImageUri))
+            {
+                <MudAvatar Color="Color.Primary" Variant="Variant.Outlined">
+                    <MudIcon Icon=@Icons.Material.TwoTone.Person />
+                </MudAvatar>
+            }
+            else
+            {
+                <MudAvatar Image="@ImageUri" />
+            }
+        </CardHeaderAvatar>
+        <!-- <CardHeaderAvatar>
+             <MudAvatar Color="Color.Primary" Variant="Variant.Outlined">
+                 <MudIcon Icon=@Icons.Material.TwoTone.Person />
+             </MudAvatar>
+         </CardHeaderAvatar> -->
+        <CardHeaderContent>
+            <MudText Typo="Typo.caption">@username</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+</MudCard>
+@namespace Thomprog.Components
+@code
+    {
+
+    [Inject]
+    public PocketBase PocketBase { get; set; } = null!;
+
+    private string? ImageUri { get; set; }
+    private string? first_name { get; set; }
+    private string? last_name { get; set; }
+    private string? username { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+    [Parameter]
+    public string? Style { get; set; }
+
+    protected override async Task OnInitializedAsync()
+
+    {
+         username = await DatabaseService.GetUsername();
+        //Util.Log(username);
+        string userid = await DatabaseService.GetUserId();
+        //Util.Log(userid);
+        string token = await DatabaseService.GetUserToken();
+        //Util.Log(token);
+        first_name =  await DatabaseService.GetFirstName();
+        last_name =  await DatabaseService.GetLastName();//    GetLastName();
+
+        //var result = await PocketBase.User.GetOneAsync("lhubc30ne4u778i");
+
+        //Util.Log(result);
+        //Util.Log(DatabaseService.GetUserToken());
+        //var user = authstate.Result.User;
+        //var name = user.Identity.Name;
+        //Console.WriteLine("User");
+        //Console.WriteLine(user.Identity.Name);
+
+    }
+
+    /*  [CascadingParameter]
+     protected Task<AuthenticationState> AuthState { get; set; } = default!;
+
+     private string? UserId { get; set; }
+     private string? Email { get; set; }
+     private string? FullName { get; set; }
+     private string? ImageUri { get; set; }
+
+     protected override async Task OnAfterRenderAsync(bool firstRender)
+         {
+         if (firstRender)
+             {
+             await LoadUserData();
+     }
+     }
+
+     private async Task LoadUserData()
+         {
+         var user = (await AuthState).User;
+         if (user.Identity?.IsAuthenticated == true)
+             {
+             if (string.IsNullOrEmpty(UserId))
+                 {
+                 FullName = user.GetFullName();
+                 UserId = user.GetUserId();
+                 Email = user.GetEmail();
+                 ImageUri = string.IsNullOrEmpty(user?.GetImageUrl()) ? string.Empty : (Config[ConfigNames.ApiBaseUrl] + user?.GetImageUrl());
+                 StateHasChanged();
+         }
+             }
+    } */
+
+}

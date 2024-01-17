@@ -1,0 +1,93 @@
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime Js
+@inject NavigationManager UriHelper
+@using Thomprog.Shared.Helper
+@using Thomprog.Models
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+@using System;
+@using System.IO;
+@using System.Net;
+@using Thomprog.Pages.FileUpload;
+
+
+<MudPaper Class="pa-4 ">
+<ThomTitle Title=@L["Fileupload"] Description=@L["Manage your Files"] />
+
+   
+        <InputFile id="fileInput" OnChange="UploadFiles" hidden accept="*" />
+        <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                   StartIcon="@Icons.Material.TwoTone.CloudUpload" for="fileInput">
+            Upload
+        </MudButton>
+        <MudText Typo="Typo.caption">@L["Max file size"]: @_maxFileSizeInMb MB</MudText>
+
+        <FileTable collectionName=@collectionName virtualFolder=@virtualFolder @ref="myTable" ></FileTable>
+
+        
+
+</MudPaper>
+
+@code {
+
+    [Parameter]
+    public string collectionName { get; set; } = "files";
+    [Parameter]
+    public string virtualFolder { get; set; } = "";
+
+    FileTable myTable;
+
+    [Inject]
+    Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+    [Inject]
+    public PocketBase PocketBase { get; set; } = null!;
+    public PocketBaseOptions pocketBaseOptions = new();
+    private string url;
+    
+    
+    public static readonly long MaxAllowedSize = 20000000; // Allows Max File Size of 20 Mb.
+
+    FileuploadModel fileUpload =  new();
+    private IReadOnlyList<FileuploadModel>? filesList { get; set; }
+    private IReadOnlyList<FileuploadModel>? filesListFiltered { get; set; }
+
+    static long _maxFileSizeInMb = 20;  // In Helper FileUploadHelper.cs definiert
+    long _maxFileSize = 1024 * 1024 * _maxFileSizeInMb;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        url = pocketBaseOptions.BaseUrl;
+
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        
+        var file = e.File;
+        if (file is not null)
+        {
+            var userid = await localStorage.GetItemAsync<string>("Id");
+
+            IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = FileUploadHelper.ConvertToIFileEnumerable(file, "file");
+
+            if (file is not null)
+            {
+
+                fileUpload.userid = userid;
+                fileUpload.name = file.Name;
+                fileUpload.filetype = Path.GetExtension(file.Name);
+                fileUpload.virtualFolder = virtualFolder; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+
+                var response = await DatabaseService.Insert<FileuploadModel>(collectionName, fileUpload, fileEnumerable);
+
+            }
+            myTable.GetTable();
+            Snackbar.Add("File uploaded", Severity.Success);
+
+        }
+
+    }
+
+}

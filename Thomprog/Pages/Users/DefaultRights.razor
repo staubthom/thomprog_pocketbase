@@ -1,0 +1,81 @@
+@attribute [Authorize]
+@using Thomprog.Models
+@using Thomprog.Services;
+
+@inject DatabaseService DatabaseService
+@inject IDialogService DialogService
+
+@inject NavigationManager _nav
+
+  <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-auto" StartIcon="@Icons.Material.TwoTone.ArrowBack" Link="/users">@L["Back"]</MudButton>
+  <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="SaveAsync"  ButtonType="ButtonType.Submit" Style="margin-left: 5px!important;" StartIcon="@Icons.Material.TwoTone.Save">@L["Update Permissions"]</MudButton>
+
+<MudCheckBox @bind-Checked="@canViewProfile" Label="canViewProfile"></MudCheckBox>
+ <MudCheckBox @bind-Checked="@canManageUsers" Label="canManageUsers"></MudCheckBox>   
+ <MudCheckBox @bind-Checked="@canViewAdministrationGroup" Label="canViewAdministrationGroup"></MudCheckBox>
+ <MudCheckBox @bind-Checked="@canManageRoles" Label="canManageRoles"></MudCheckBox>      
+
+    @code{
+
+    [Parameter]
+    public string user_id { get; set; }    
+    private string userId;
+    private string Id;
+    private string? email;
+    private bool canViewProfile;
+    private bool canManageUsers;
+    private bool canViewAdministrationGroup;
+    private bool canManageRoles;
+
+    protected override async Task OnInitializedAsync()
+    {      
+
+        await GetTable(user_id);
+    }
+
+    protected async Task GetTable(string _user_id)
+    {
+        // await Task.Delay(10000);
+
+        var rights_ienum = await DatabaseService.GetRecordByUserId<Thomprog.Models.Rights>("rights", _user_id);
+        List<Thomprog.Models.Rights> rights = rights_ienum.ToList();
+        foreach (var item in rights)
+        {
+            Id = item.Id;
+            userId = item.user_id;
+            email = item.email;
+            canViewProfile = item.canViewProfile;
+            canManageUsers = item.canManageUsers;
+            canViewAdministrationGroup = item.canViewAdministrationGroup;
+            canManageRoles = item.canManageRoles;           
+
+        }     
+
+        await InvokeAsync(StateHasChanged);
+    }    
+
+    protected Thomprog.Models.Rights Model = new();
+
+    private async Task SaveAsync()
+    {
+        Model.Id = Id;
+        Model.user_id = userId;
+        Model.email = email;
+        Model.canViewProfile = canViewProfile;
+        Model.canManageUsers = canManageUsers;
+        Model.canViewAdministrationGroup = canViewAdministrationGroup;
+        Model.canManageRoles = canManageRoles;
+
+        //Console.WriteLine(canViewProfile);
+
+        await DatabaseService.Update<Models.Rights>("rights",Model);
+
+        Snackbar.Add(@L["successful saved"], Severity.Success);
+
+        {
+            Navigation.NavigateTo("/Users");
+        }
+    }
+
+}
+

@@ -1,0 +1,146 @@
+@page "/recorder"
+@inject IJSRuntime mJS
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@using Thomprog.Shared.Helper
+@using Thomprog.Models
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+@using System;
+@using System.IO;
+@using System.Net;
+@using Thomprog.Pages.FileUpload;
+
+<MudPaper Class="pa-4 ">
+<ThomTitle Title=@L["Recorder"] Description=@L["Manage your Records"] />
+
+<MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+
+    <MudButton StartIcon="@Icons.Material.TwoTone.FiberManualRecord" @onclick="butRecordAudioStart_Click" disabled=@mDisableRecordAudioStart></MudButton>
+    <MudButton StartIcon="@Icons.Material.TwoTone.PauseCircle" @onclick="butRecordAudioPause_Click" disabled=@mDisableRecordAudioPause></MudButton>
+    <MudButton StartIcon="@Icons.Material.TwoTone.PlayCircle"  @onclick="butRecordAudioResume_Click" disabled=@mDisableRecordAudioResume></MudButton>
+    <MudButton StartIcon="@Icons.Material.TwoTone.StopCircle"  @onclick="butRecordAudioStop_Click" disabled=@mDisableRecordAudioStop></MudButton>
+    <MudButton StartIcon="@Icons.Material.TwoTone.Save"  @onclick="butSaveBlob_Click" disabled=@mDisableDownloadBlob></MudButton>
+</MudButtonGroup>
+   <MudDivider Class="ma-4 " />
+<audio controls autoplay src=@mUrl></audio>
+   <MudDivider />
+
+<div class="alert alert-secondary mt-4">
+    <span class="oi oi-pencil me-2" aria-hidden="true"></span>
+    <strong></strong>
+
+</div>
+
+    <FileTable collectionName=@collectionName @ref="myTable"></FileTable>
+
+</MudPaper >
+
+@code {
+
+    private string collectionName = "audio";
+    FileTable myTable;
+    string mUrl;
+    public const string FormatDateTimeStamp = "yyyy_MM_dd__HH_mm_ss_ffff";
+    bool mDisableRecordAudioStart;
+    bool mDisableRecordAudioPause = true;
+    bool mDisableRecordAudioResume = true;
+    bool mDisableRecordAudioStop = true;
+    bool mDisableDownloadBlob = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await mJS.InvokeVoidAsync("BlazorAudioRecorder.Initialize", DotNetObjectReference.Create(this));
+
+    }
+    void butRecordAudioStart_Click()
+    {
+        mUrl = "";
+        mDisableRecordAudioStart = true;
+        mDisableRecordAudioPause = false;
+        mDisableRecordAudioResume = true;
+        mDisableRecordAudioStop = false;
+        mDisableDownloadBlob = true;
+        mJS.InvokeVoidAsync("BlazorAudioRecorder.StartRecord");
+    }
+
+    void butRecordAudioPause_Click()
+    {
+        mDisableRecordAudioStart = true;
+        mDisableRecordAudioPause = true;
+        mDisableRecordAudioResume = false;
+        mDisableRecordAudioStop = false;
+        mDisableDownloadBlob = true;
+        mJS.InvokeVoidAsync("BlazorAudioRecorder.PauseRecord");
+    }
+
+    void butRecordAudioResume_Click()
+    {
+        mDisableRecordAudioStart = true;
+        mDisableRecordAudioPause = false;
+        mDisableRecordAudioResume = true;
+        mDisableRecordAudioStop = false;
+        mDisableDownloadBlob = true;
+        mJS.InvokeVoidAsync("BlazorAudioRecorder.ResumeRecord");
+    }
+
+    void butRecordAudioStop_Click()
+    {
+        mDisableRecordAudioStart = false;
+        mDisableRecordAudioPause = true;
+        mDisableRecordAudioResume = true;
+        mDisableRecordAudioStop = true;
+        mDisableDownloadBlob = false;
+        mJS.InvokeVoidAsync("BlazorAudioRecorder.StopRecord");
+    }
+
+    private async Task butSaveBlob_Click()
+    {
+        //mJS.InvokeVoidAsync("BlazorAudioRecorder.DownloadBlob", mUrl, "MyRecording_" + DateTimeStamp() + ".mp3");
+
+ 	    String filename="Recording_"+ DateTimeStamp() + ".mp3"; 
+        var blob_file = await Http.GetStreamAsync(mUrl);             
+        FileuploadModel fileUpload = new();
+
+        IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = StreamFileUploadHelper.ConvertToIFileEnumerable(blob_file, "file", filename);
+
+                //fileUpload.userid = userid;
+                fileUpload.name = filename;
+                fileUpload.filetype = ".mp3";
+                fileUpload.virtualFolder = ""; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+
+        var response = await DatabaseService.Insert<FileuploadModel>(collectionName, fileUpload, fileEnumerable);
+
+        Snackbar.Add("File uploaded: ");
+        myTable.GetTable();
+
+        StateHasChanged();
+
+    }
+
+    [JSInvokable]
+    public async Task OnAudioUrl(string vUrl)
+    {
+        mUrl = vUrl;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    public static string DateTimeStamp()
+    {
+        var pOut = DateTime.Now.ToString(FormatDateTimeStamp);
+        return pOut;
+    }
+
+     public static Stream GenerateStreamFromString(string s)
+  {
+    var stream = new MemoryStream();
+    var writer = new StreamWriter(stream);
+    writer.Write(s);
+    writer.Flush();
+    stream.Position = 0;
+    return stream;
+  }        
+
+}

@@ -1,0 +1,181 @@
+﻿@using Thomprog.Models;
+@using Thomprog.Components.Dialog;
+@using Thomprog.Shared.Helper;
+
+@inject IDialogService DialogService
+<MudDialog  >
+
+    <DialogContent>
+
+        <!-- Edit form for the current forecast -->
+
+        <MudTextField Label="Name" HelperText=""
+                      @bind-Value="newcollection.name" />
+        <MudTextField Label="Description" HelperText=""
+                      @bind-Value="newcollection.description" />
+        <MudColorPicker Label="Palette" ColorPickerView="ColorPickerView.Palette" @bind-Text="newcollection.color" Style="@($"color: {newcollection.color};")" />
+
+        @if (newcollection.Id != "")
+        {
+
+        <MudItem xs="12" sm="12" md="4">
+            <MudCard Elevation="25">
+                <MudCardContent Style="padding:0px!important">
+                    <div class="d-flex justify-center mb-4">
+                            @if (!string.IsNullOrEmpty(newcollection.avatar))
+                        {
+
+                                <MudAvatar Square="true" Image="@($"{url}api/files/{newcollection.CollectionId}/{newcollection.Id}/{newcollection.avatar}")" Style=" width:100%;height:200px;"> </MudAvatar>
+                        }
+                        else
+                        {
+                            <MudAvatar Square="true" Color="Color.Primary" Style="width:100%;height:200px"> </MudAvatar>
+                        }
+                    </div>                    
+                    </MudCardContent>
+                    <MudCardActions Class="d-flex justify-center">
+                        <InputFile id="fileInput" OnChange="UploadFiles" hidden accept=".jpg,.jpeg,.png" />
+                        <div style="padding-bottom:20px">
+                            <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                       StartIcon="@Icons.Material.TwoTone.CloudUpload" for="fileInput">
+                                Upload
+                            </MudButton>
+                            @if (!string.IsNullOrEmpty(newcollection.avatar))
+                        {
+
+                            <MudButton HtmlTag="label" DisableElevation Variant="Variant.Filled" Color="Color.Error" Size="Size.Small"
+                                            StartIcon="@Icons.Material.TwoTone.Delete" OnClick="RemoveImageAsync" Style="margin-left: 5px;">
+                                 @L["Delete"]
+                            </MudButton>
+                        }
+
+                    </div>
+
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        }
+
+        <br />
+        <MudButton Variant="Variant.Filled" OnClick="() => Save(newcollection)" Color="Color.Primary"> Save</MudButton>
+
+        <!-- Button to save the forecast -->
+        <!-- Only show delete button if not a new record -->
+        @if (newcollection.Id != "")
+        {
+
+            <MudButton Variant="Variant.Filled" OnClick="() => Delete(newcollection)" Color="Color.Error" Class="ma-3"> Delete</MudButton>
+
+        }
+
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+
+    [Parameter] public TodoModel newcollection { get; set; }
+    [Parameter] public string url { get; set; } 
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    // ---------------- DELETE
+    private async Task Delete(TodoModel item)
+    {
+        await DatabaseService.Delete<TodoModel>("todos", item);
+
+    }
+
+    // ---------------- CREATE NEW ---------------------
+
+    private async Task Save(TodoModel item)
+    {
+
+       
+
+        if (item.name != "")
+        {
+            if (item.Id == "")
+            {
+                await DatabaseService.Insert<TodoModel>("todos", item);
+            }
+            else
+            {
+                await DatabaseService.Update<TodoModel>("todos", item);
+            }
+        }
+
+        MudDialog.Close(DialogResult.Ok(true));
+
+    }
+
+    public async Task RemoveImageAsync()
+    {
+        string deleteContent = "You're sure you want to delete your Profile Image?";
+        var parameters = new DialogParameters
+        {
+            { nameof(DeleteConfirmation.ContentText), deleteContent }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true };
+        var dialog = DialogService.Show<DeleteConfirmation>("Delete", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+
+            newcollection.avatar = "";
+            await Save(newcollection);
+        }
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file is not null)
+        {
+            string? extension = Path.GetExtension(file.Name);
+            if (!ApplicationConstants.SupportedImageFormats.Contains(extension.ToLower()))
+            {
+                Snackbar.Add("Image Format Not Supported.", Severity.Error);
+                return;
+            }
+            var imageFile = await file.RequestImageFileAsync(ApplicationConstants.StandardImageFormat, ApplicationConstants.MaxImageWidth, ApplicationConstants.MaxImageHeight);
+
+            //IBrowserFile browserFile = e.File;// Ihr IBrowserFile-Objekt hier
+
+            IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = FileUploadHelper.ConvertToIFileEnumerable(imageFile, "avatar");
+
+            if (file is not null)
+            {
+
+                
+                var response = await DatabaseService.UpdateAsyncWithFile<TodoModel>("todos", newcollection, fileEnumerable);
+                MudDialog.Close(DialogResult.Ok(true));
+
+            }
+
+        }
+    }
+
+    public static class ApplicationConstants
+    {
+        public static readonly List<string> SupportedImageFormats = new()
+        {
+            ".jpeg",
+            ".jpg",
+            ".png"
+        };
+        public static readonly string StandardImageFormat = "image/jpeg";
+        public static readonly int MaxImageWidth = 2500;
+        public static readonly int MaxImageHeight = 2500;
+        public static readonly long MaxAllowedSize = 20000000; // Allows Max File Size of 20 Mb.
+    }
+
+}

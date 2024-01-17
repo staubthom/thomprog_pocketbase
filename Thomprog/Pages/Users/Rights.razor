@@ -1,0 +1,30 @@
+@page "/rights/{userId}"
+@attribute [Authorize]
+@using Thomprog.Models
+@using Thomprog.Services;
+
+@inject DatabaseService DatabaseService
+@inject IDialogService DialogService
+
+@inject NavigationManager _nav
+
+<MudPaper Class="pa-4 ">
+<ThomTitle Title=@L["Permissions"] Description=@L["You are manageing somone elses Rights be carefull"] Color=Color.Error />
+
+<MudTabs Elevation="25" Color="Color.Transparent" Rounded="true" PanelClass="mt-6 mr-16" pa-4 mr-16>
+    <MudTabPanel Text=@L["Admin"]>
+         <DefaultRights user_id=@userId/>
+
+    </MudTabPanel>    
+        <MudTabPanel Text="Spez">
+        </MudTabPanel> 
+
+</MudTabs>
+
+</MudPaper> 
+ @code{
+       [Parameter]
+    public string userId { get; set; }
+
+}
+

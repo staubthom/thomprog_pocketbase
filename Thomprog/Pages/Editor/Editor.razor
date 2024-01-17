@@ -1,0 +1,322 @@
+
+@using System.Net.Http;
+@using System.Threading.Tasks;
+@using System.Text
+@using Thomprog.Pages.FileUpload;
+@using Thomprog.Shared.Helper
+@using Thomprog.Models
+@using Thomprog.Services;
+@using Thomprog.Options;
+@using Thomprog.Components.Dialog;
+@using System;
+@using System.IO;
+@using System.Net;
+
+@inject IJSRuntime JSRuntime
+
+@inject IDialogService DialogService
+
+@inject ISnackbar Snackbar
+@inject IJSRuntime Js
+@inject NavigationManager NavigationManager
+
+<MudPaper Class="d-flex align-center  mud-width-full py-8 ">
+    <div style="margin-left: 20px; margin-right:20px">
+        <MudText Typo="Typo.subtitle2">@L["Folder"] : "@file.virtualFolder"</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Save" OnClick="@(async (_) => {await save_html();})">@L["Save"]  </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.InsertDriveFile" OnClick="@(async (_) => {await new_html();})">@L["New"]  </MudButton>
+
+            <br>
+            <MudTextField Class="pt-4" @bind-Value="file.name" Label=@L["Filename"] Variant="Variant.Outlined"></MudTextField>
+            <br>
+            @if (isLoading == true)
+        {
+            <br>
+            <MudSkeleton Animation="MudBlazor.Animation.Wave" Width="100%" />
+        }
+        else
+        {
+
+            <BlazoredTextEditor @ref="@QuillNative"
+                                Placeholder="Enter non HTML format like centering...">
+                <ToolbarContent>
+                    <select class="ql-header">
+                        <option selected=""></option>
+                        <option value="1"></option>
+                        <option value="2"></option>
+                        <option value="3"></option>
+                        <option value="4"></option>
+                        <option value="5"></option>
+                    </select>
+                    <span class="ql-formats">
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected=""></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                        <select class="ql-font">
+                            <option selected=""></option>
+                            <option value="serif"></option>
+                            <option value="monospace"></option>
+                        </select>
+
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                        <button class="ql-strike"></button>
+                        <button class="ql-script" value="sub"></button>
+                        <button class="ql-script" value="super"></button>
+                    </span>
+
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                 
+                    <span class="ql-formats">
+                        <button class="ql-indent" value="+1"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <select class="ql-align">
+                            <option selected=""></option>
+                            <option value="center"></option>
+                            <option value="right"></option>
+                            <option value="justify"></option>
+                        </select>
+                    </span>
+                   
+
+
+                    <span class="ql-formats">
+                        <button class="ql-blockquote"></button>
+                        <button class="ql-code-block"></button>
+                    </span>
+                   
+
+                 
+                    
+            
+                    <span class="ql-formats">
+                        <button class="ql-link"></button>
+                        <button class="ql-image"></button>
+                        <button class="ql-video"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-formula"></button>
+                        <button class="ql-clean"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-direction" value="rtl"></button>
+
+                    </span>
+                     
+                     
+                         
+
+                </ToolbarContent>
+            </BlazoredTextEditor>
+        }
+
+        <br>
+
+    </div>
+
+</MudPaper>
+
+@code {
+
+    [Parameter]
+    public FileuploadModel file { get; set; } = new();
+
+    [Parameter]
+    public string virtualFolder { get; set; } = "";
+     [Parameter]
+    public string CollectionName { get; set; } = "files";
+
+    // Quill editor
+    public const string FormatDateTimeStamp = "yyyy_MM_dd__HH_mm_ss_ffff";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (file.Id == null)
+        {
+
+           
+
+            file.name = "Note.html";
+            
+            file.filetype = ".html";
+            file.virtualFolder = virtualFolder; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+            file.CollectionName = CollectionName;
+            file.Id = "";
+            file.file = "";
+
+        }
+        else
+        {
+           
+
+            await load_html();
+        }
+
+    }
+
+    private async Task save_json()
+    {
+
+        QuillContent = await this.QuillNative.GetContent();
+        String filename = "Note" + DateTimeStamp() + ".json";
+        Stream stream = await GenerateStreamFromString(QuillContent);
+       
+        IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = StreamFileUploadHelper.ConvertToIFileEnumerable(stream, "file", filename);
+
+        FileuploadModel fileUpload = new();
+        //fileUpload.userid = userid;
+        fileUpload.name = filename;
+        fileUpload.filetype = ".json";
+        fileUpload.virtualFolder = virtualFolder; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+
+        var response = await DatabaseService.Insert<FileuploadModel>(file.CollectionName, fileUpload, fileEnumerable);
+
+        Snackbar.Add("File uploaded: ");
+        //myTable.GetTable();
+        StateHasChanged();
+
+    }
+
+    private async Task save_html()
+    {
+
+        FileuploadModel fileUpload = new();
+        QuillContent = await this.QuillNative.GetHTML();
+        if (file.Id == "")
+        {
+            file.name = "Note_" + DateTimeStamp() + ".html";
+            file.filetype = ".html";
+            file.virtualFolder = virtualFolder; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+
+            Stream stream = await GenerateStreamFromString(QuillContent);
+
+            IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = StreamFileUploadHelper.ConvertToIFileEnumerable(stream, "file", file.name);
+            var response = await DatabaseService.Insert<FileuploadModel>(file.CollectionName, file, fileEnumerable);
+        }
+        else
+        {
+            Stream stream = await GenerateStreamFromString(QuillContent);
+            file.file = "";
+
+            IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = StreamFileUploadHelper.ConvertToIFileEnumerable(stream, "file", file.name);
+            var response = await DatabaseService.UpdateAsyncWithFile<FileuploadModel>(file.CollectionName, file, fileEnumerable);
+
+        }
+
+        Snackbar.Add("File uploaded:", Severity.Success);
+
+        StateHasChanged();
+
+    }
+
+    public async Task<Stream> GenerateStreamFromString(string s)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream, Encoding.UTF8);
+        writer.Write(s);
+        writer.Flush();
+        stream.Position = 0;
+        return stream;
+    }
+
+    private async Task load_json()
+    {
+
+        string filepath = file.CollectionName + file.name;
+        byte[] downloadedBytes = null;//await StorageService.GetBookFromFile(bucket, filepath);
+        Console.WriteLine("Download beendet");
+        QuillContent = System.Text.Encoding.Default.GetString(downloadedBytes);
+        await this.QuillNative.LoadContent(QuillContent);
+        StateHasChanged();
+
+    }
+
+    private async Task new_html()
+    {
+        QuillContent = "";
+        file.name = "Note.html";
+        file.filetype = ".html";
+        file.virtualFolder = virtualFolder; // Damit k�nnen virtuele Ordner erstellt werden f�r eine allf�llige suche in einer Collection
+        file.Id = "";
+        file.file = "";
+
+        await this.QuillNative.LoadHTMLContent(QuillContent);
+        StateHasChanged();
+    }
+
+    private async Task load_html()
+    {
+        //isLoading=true;
+
+        if (file.Id != "")
+        {
+            var fileStream = await DatabaseService.DownloadFileAsync(file.CollectionName, file.Id, file.file);
+            //var fileName = file.name;
+           
+
+            byte[] fileBytes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await fileStream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            QuillContent = System.Text.Encoding.Default.GetString(fileBytes).Trim(new char[] { '\uFEFF' }); ; // Entfern BOM Byte Order Mark
+
+           
+
+            await this.QuillNative.LoadHTMLContent(QuillContent);
+
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    public static string DateTimeStamp()
+    {
+        var pOut = DateTime.Now.ToString(FormatDateTimeStamp);
+        return pOut;
+    }
+
+    BlazoredTextEditor QuillNative;
+    string QuillHTMLContent;
+    string QuillContent;
+    bool isLoading = false;
+
+    public async void GetHTML()
+    {
+        QuillHTMLContent = await this.QuillNative.GetHTML();
+        Console.WriteLine("QuillHTMLContent");
+        StateHasChanged();
+    }
+
+    public async void GetContent()
+    {
+        QuillContent = await this.QuillNative.GetContent();
+        StateHasChanged();
+    }
+    public async void LoadContent()
+    {
+        await this.QuillNative.LoadContent(QuillContent);
+        StateHasChanged();
+    }
+
+    public async void InsertImage()
+    {
+        await this.QuillNative.InsertImage("images/BlazorHelpWebsite.gif");
+        StateHasChanged();
+    }
+
+}

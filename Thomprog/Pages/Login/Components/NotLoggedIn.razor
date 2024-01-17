@@ -1,0 +1,61 @@
+﻿@inject IJSRuntime JSRuntime
+
+@using Blazored.LocalStorage
+<MudContainer Class="d-flex justify-center align-center" Style="height:100vh !important">
+    <MudPaper Elevation="5" Class="pa-10" style="text-align:center">
+        <MudContainer Class="d-flex flex-column justify-center" style="width: 450px">
+            <MudText Typo="Typo.h5">@L["Welcome"]</MudText>
+                <br>
+            <MudTextField Label="Email" @bind-Value="Username" Variant="Variant.Outlined" AdornmentColor="Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.TwoTone.AccountCircle"></MudTextField>
+                <MudTextField Label="Password" @bind-Value="Password" Variant="Variant.Outlined" AdornmentColor="Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.TwoTone.Lock" InputType="InputType.Password"></MudTextField>
+                <br>
+            <MudButton Variant="Variant.Filled" FullWidth Color="Color.Primary"  StartIcon="@Icons.Material.TwoTone.Login"
+                        OnClick="LoginAsync">Login</MudButton>
+         </MudContainer>
+     </MudPaper>
+ </MudContainer>
+ @code
+ {
+
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+    private readonly ILocalStorageService _localStorage;
+
+    protected async Task LoginAsync()   
+    {
+        var valid = CheckInputs();
+        if (valid)
+        {
+
+            bool result = await DatabaseService.Login(Username, Password); 
+            if (result)
+            {
+
+                //await RightsService.GetRights();
+                //await PreferenceService.GetPreference();
+                Snackbar.Add("Logged in!", Severity.Success);
+                Navigation.NavigateTo("/");
+                
+            }
+            else
+            {
+                Snackbar.Add("Login failed, please check your Username and Password", Severity.Error);
+
+            }
+
+        }
+    }
+
+    private bool CheckInputs()
+    {
+        var userEmpty = string.IsNullOrWhiteSpace(Username);
+        var passwordEmpty = string.IsNullOrWhiteSpace(Password);
+
+        if (userEmpty || passwordEmpty)
+        {
+            Snackbar.Add("The Username und Password fields are required.", Severity.Warning);
+            return false;
+        }
+        return true;
+    }
+ }

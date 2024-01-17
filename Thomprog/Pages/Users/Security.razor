@@ -1,0 +1,152 @@
+@using Thomprog.Models
+@using Thomprog.Services;
+
+@inject DatabaseService DatabaseService
+@inject IDialogService DialogService
+ <MudGrid>
+    <MudItem xs="12" sm="12" md="12">
+
+            <MudCard Elevation="25">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText>@L["Change Password"]</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                         <MudTextField @bind-Value="old_password" Label=@L["Old Password"] Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonPasswordclick" AdornmentAriaLabel="Show Password" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                         <MudTextField @bind-Value="new_password" Label=@L["New Password"] Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonPasswordclick" AdornmentAriaLabel="Show Password" />
+                          </MudItem>
+                       <MudItem xs="12" md="6">
+                         <MudTextField @bind-Value="confirm_password" Label=@L["Confirm Password"] Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonPasswordclick" AdornmentAriaLabel="Show Password" />
+                       </MudItem>
+
+                    </MudGrid>
+                </MudCardContent>
+                 <MudCardActions Class="pb-4 pl-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" StartIcon="@Icons.Material.TwoTone.Save" @onclick="ChangePassword"
+                       >@L["Change Password"]</MudButton>
+                </MudCardActions>
+
+            </MudCard>       
+    </MudItem>
+
+        <MudItem xs="12" sm="12" md="12">      
+            <MudCard Elevation="25">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText>@L["Change Email"]</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                       <MudItem xs="12" md="6">
+                         <MudTextField @bind-Value="email" Label=@L["New Email"] Variant="Variant.Outlined"    />
+
+                       </MudItem>
+                       <MudItem xs="12" md="6">
+                         <MudTextField @bind-Value="confirm_email" Label=@L["Confirm Email"] Variant="Variant.Outlined"  />
+
+                       </MudItem>
+
+                    </MudGrid>
+                </MudCardContent>
+                 <MudCardActions Class="pb-4 pl-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" StartIcon="@Icons.Material.TwoTone.Save" @onclick="ChangeEmail">@L["Change Email"]</MudButton>
+                </MudCardActions>
+
+            </MudCard>
+
+    </MudItem>
+
+</MudGrid>
+
+    @code{
+    private string? old_password;
+    private string? new_password;
+    private string? confirm_password;
+    private string? email;
+    private string? confirm_email;
+
+    [Inject]
+    Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
+    CreateUserModel passwordModel = new();
+
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.TwoTone.VisibilityOff;
+    protected override async Task OnInitializedAsync()
+    {
+
+       /*  var profiles_ienum = await DatabaseService.GetRecordById<Profiles>("profiles", "dddd");
+        List<Profiles> profiles = profiles_ienum.ToList();
+
+        foreach (var item in profiles)
+        {            
+            email = item.email;           
+        }         
+        */
+
+    }
+
+    void ButtonPasswordclick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.TwoTone.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.TwoTone.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    private async Task ChangePassword()
+    {
+        if (new_password==confirm_password)
+        {               
+            //await AuthService.UpdateUserPassword(new_password);
+            var userid = await localStorage.GetItemAsync<string>("Id");
+            passwordModel.Id = userid;
+            passwordModel.passwordConfirm = confirm_password;
+            passwordModel.oldPassword = old_password;
+            passwordModel.password = new_password;
+
+            var profiles_ienum = await DatabaseService.Update<CreateUserModel>("users", passwordModel);
+
+                Snackbar.Add("Successful Changed", Severity.Success);                                
+
+            }
+            else
+            {
+                    Snackbar.Add("Passwort stimmt nicht überein",Severity.Error);
+            }
+
+    }
+
+         private async Task ChangeEmail()
+        {
+            if (new_password==confirm_password)
+            {
+
+                //await AuthService.UpdateUserEmail(email);
+
+                Snackbar.Add("Successful Changed", Severity.Success);   
+
+            }
+            else
+            {
+                    Snackbar.Add("Passwort stimmt nicht überein",Severity.Error);
+            }
+
+    }
+
+}

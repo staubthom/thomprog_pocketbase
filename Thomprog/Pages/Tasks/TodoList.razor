@@ -1,0 +1,188 @@
+﻿@page "/todo"
+@using Thomprog.Models;
+@using Thomprog.Options
+@using Microsoft.AspNetCore.Components;
+@using pocketbase_csharp_sdk;
+@using Thomprog.Components.Dialog;
+<MudPaper Class="pa-4 ">
+    <ThomTitle Title=@L["Todo"] Description=@L["Manage your To-do's"] />
+
+    <MudCard>
+       <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">To-Do List</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIconButton Icon="@Icons.Material.TwoTone.Refresh" Color="Color.Default" OnClick="getEntrys" />
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNew"
+                    StartIcon="@Icons.Material.TwoTone.Create">@L["Create new Category"]</MudButton>
+            </MudCardActions>
+            @if (todos is null)
+            {
+                @for (int i = 0; i < 5; i++)
+                {
+                    <MudSkeleton />
+                }
+            }
+            else
+            {
+                foreach (var task in todos)
+                {
+                   <MudStack>
+                        <MudPaper Class="pa-1 ma-2" @onclick="() => GoToDetails(task)" Style="@($"background-color:{task.color};")">
+                            <MudStack Row="true"   Justify= "Justify.SpaceBetween"  >
+                               
+                                    <MudAvatar Image="@($"{url}api/files/{task.CollectionId}/{task.Id}/{task.avatar}")" Size="Size.Large" Square="true" />
+                               
+                               
+                                   
+                                
+                                <MudStack Justify="Justify.Center" Spacing="0">                                    
+                                        <MudText Typo="Typo.body1"> @task.name</MudText> 
+                                    <MudText Typo="Typo.body2"> @task.description</MudText> 
+                                </MudStack>
+                              
+                                        <MudIconButton Icon="@Icons.Material.TwoTone.Edit" Variant="Variant.Filled"
+                                                                Class="ml-0 align-self-center" OnClick="() => Edit(task)"
+                                                                Size="Size.Medium"
+                                                                Color="Color.Secondary"> 
+                                        </MudIconButton>
+                                        
+                                
+                            </MudStack>
+                        </MudPaper>
+                       
+                    </MudStack>
+                }
+
+            }
+        </MudCardContent>
+
+    </MudCard>
+</MudPaper>
+
+@code {
+
+    MudForm? _form;
+    [Inject]
+    public PocketBase PocketBase { get; set; } = null!;
+    public PocketBaseOptions pocketBaseOptions = new();
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = null!;
+
+    //public EventCallback<bool> ShowPopup = false { get; set; }
+
+    private DialogOptions dialogOptions = new() { };
+    string Error = "";
+    private bool _loading = false;
+    private IEnumerable<TodoModel>? todos;
+    TodoModel newcollection;
+
+    private string url;
+
+    async Task AddNew()
+    {
+
+        // Make new forecast
+        newcollection = new();
+        // Set Id to 0 so we know it is a new record
+        newcollection.Id = "";
+        // Open the Popup
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                DisableBackdropClick = false
+            };
+        var parameters = new DialogParameters<CreateCategoryDialog>();
+        parameters.Add(x => x.newcollection, newcollection);
+        parameters.Add(x => x.url, url);
+        var dialog = await DialogService.ShowAsync<CreateCategoryDialog>("Create new Category", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Category added.", Severity.Success);
+        }
+
+        newcollection = null;
+        await getEntrys();
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await getEntrys();
+        await base.OnInitializedAsync();
+
+        url = pocketBaseOptions.BaseUrl;
+    }
+
+    private async Task getEntrys()
+    {
+        _loading = true;
+
+        todos = await DatabaseService.GetCollection<TodoModel>("todos");
+
+        /*
+        if (!string.IsNullOrEmpty(todos.avatar))
+        {
+        _imageUrl = pocketBaseOptions.BaseUrl + "api/files/" + item.CollectionId + "/" + item.Id + "/" + item.avatar;
+        }
+        else
+        {
+        _imageUrl = "";
+        }
+        */
+
+        _loading = false;
+
+    }
+
+    private void GoToDetails(TodoModel dto)
+    {
+        var path = $"/details/{dto.Id}";
+        NavigationManager.NavigateTo(path);
+    }
+    // ---------------- SEARCH
+    private void OnValueChangedSearch(string text)
+    {
+        //todosFiltered = todos?.Where(row => row.name.Contains(text)).ToList();
+    }
+
+    async Task Edit(TodoModel item)
+    {
+
+        Console.WriteLine("Edit");
+        Console.WriteLine(item.name);
+        newcollection = new();
+        newcollection = item;
+        // Open the Popup
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                DisableBackdropClick = false
+            };
+        var parameters = new DialogParameters<CreateCategoryDialog>();
+        parameters.Add(x => x.newcollection, newcollection);
+        parameters.Add(x => x.url, url);
+        var dialog = await DialogService.ShowAsync<CreateCategoryDialog>("edit Category", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Category edited.", Severity.Success);
+        }
+
+        newcollection = null;
+        await getEntrys();
+
+    }
+
+}

@@ -1,0 +1,177 @@
+@page "/crud-private"
+@attribute [Authorize]
+@using Example.Models;
+
+
+<MudPaper Class="pa-4 ">
+<ThomTitle Title="Todos Private" Description="Keep things done" />
+    <br>
+    <MudForm @ref="_form" @bind-IsValid="@_success" @bind-Errors="@_errors" ValidationDelay="0">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <h4>New item</h4>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField Label="Title" @bind-Value="todos.First().name" For="@(() => todos.First().name)" Required="true"
+                    Immediate="true" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_success)" Class="ml-auto"
+                    OnClick="OnClickSave">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Processing</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Save</MudText>
+                    }
+                </MudButton>
+            </MudCardActions>
+
+        </MudCard>
+    </MudForm>
+
+    <br>
+    <!--   
+    @if (todosFiltered == null)
+    {
+        <MudSimpleTable>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <MudSkeleton />
+                    </td>
+                    <td>
+                        <MudSkeleton />
+                    </td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+    }
+    else if (todosFiltered.Count == 0)
+    {
+        <MudSimpleTable>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <br>
+                <MudText Typo="Typo.body1" Align="Align.Center">There is no items in this table.</MudText>
+                <br>
+            </tbody>
+        </MudSimpleTable>
+    }
+    else
+    {
+        <MudTable Items="@todosFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
+        SortLabel="Sort By" T="TodoModel">
+            <ToolBarContent>
+                <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                IconSize="Size.Medium" Class="mt-0" Clearable="true"
+                ValueChanged="@(s=>OnValueChangedSearch(s))" Placeholder="Search" />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<TodoModel, object>(x=>x.name)">
+                        name
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<TodoModel, object>(x=>x.Id)">
+                        User_id
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    Action
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context?.name</MudTd>
+                <MudTd DataLabel="Id">@context?.Id</MudTd>
+                <MudTd DataLabel="Action">
+                    @* <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"
+                        Size="MudBlazor.Size.Small"
+                        OnClick="@( (e) => {NavigationManager.NavigateTo($"/todoitems/{context?.Todo?.Id}");})"
+                        /> *@
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Size="Size.Small"
+                    OnClick="@(async (_) => {await OnClickDelete(context);})" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+            </PagerContent>
+        </MudTable>
+    }-->
+
+</MudPaper> 
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {       
+        await getEntrys();
+    }
+    private bool _success = false;
+    string[] _errors = { };
+    MudForm? _form;
+    private bool _loading = false;
+    private IEnumerable<TodoModel>? todos;
+    private IEnumerable<TodoModel>? todosFiltered;
+
+    private MudTable<TodoModel>? _table;
+   // ---------------- SELECT TABLE ---------------------------
+
+    private async Task getEntrys()
+    {
+        _loading = true;
+        todos = await DatabaseService.GetCollection<TodoModel>("todos");
+        //todos = await DatabaseService.GetCollectionById<TodoModel>("todos", "k7uc9rcy64m8djt");
+
+        TodoModel item = new();
+        //item.name = "Testeintrag1";
+        item.Id = "k7uc9rcy64m8djt";
+        //item.test = "Testeintrag1";
+
+        //await DatabaseService.Update<TodoModel>("todos", item);
+        //Console.WriteLine(todos.First<TodoModel>().Name);
+        _loading = false;
+    }
+
+
+    // ---------------- SEARCH
+    private void OnValueChangedSearch(string text)
+    {
+        todosFiltered = todos?.Where(row => row.name.Contains(text)).ToList();
+    }
+
+    // ---------------- DELETE
+    private async Task OnClickDelete(TodoModel item)
+    {
+        await DatabaseService.Delete<TodoModel>("todos", item);
+        
+    }
+
+    // ---------------- CREATE NEW ---------------------
+
+   
+    private async Task OnClickSave()
+    {
+        TodoModel item = new();
+        //item.name = "Testeintrag1";
+        item.Id = "k7uc9rcy64m8djt";
+        //item.test = "Testeintrag1";
+        await DatabaseService.Insert<TodoModel>("todos", item);
+    }
+}

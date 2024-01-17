@@ -1,0 +1,30 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <p role="alert">Sorry, You are not Authorized.</p>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <MudGrid Class="mt-n15 pt-0 mb-1">
+                    <MudItem xs="12">
+                        <MudCard Elevation="1" Class="rounded-lg py-8">
+                            <MudCardContent Class="d-flex flex-column align-center">
+                                <MudIcon Color="Color.Error" Icon="fa fa-exclamation-triangle" Class="fa-7x"></MudIcon>
+                                <MudText Class="mt-8" Color="Color.Default" Typo="Typo.h2" Style="font-weight: 700;">404</MudText>
+                                <MudText Class="mt-n3" Color="Color.Default" Typo="Typo.h6" Style="font-weight: 600;">PAGE NOT FOUND</MudText>
+                                <MudText Class="mt-8" Typo="Typo.body2" Align="Align.Center">The page you're looking for cannot be found. How about trying the homepage?</MudText>
+                                <MudButton Link="/" Class="mt-8 rounded-lg px-8" Color="Color.Primary" Variant="Variant.Filled"> GO HOME </MudButton>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
