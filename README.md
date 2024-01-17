@@ -20,3 +20,5 @@ In the thomprog directory run:
     dotnet run
 
 This starts the frontend
+
+More information will follow here shortly.
