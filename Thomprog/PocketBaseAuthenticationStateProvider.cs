@@ -17,25 +17,25 @@ namespace Thomprog
         private readonly PocketBase _pocketBase;
         private readonly ILocalStorageService _localStorage;
 
-        public PocketBaseAuthenticationStateProvider(PocketBase pocketBase,  ILocalStorageService localStorage)
+        public PocketBaseAuthenticationStateProvider(PocketBase pocketBase, ILocalStorageService localStorage)
         {
             this._pocketBase = pocketBase;
-            this._localStorage = localStorage;        
+            this._localStorage = localStorage;
 
             pocketBase.AuthStore.OnChange += AuthStore_OnChange;
         }
 
         private async void AuthStore_OnChange(object? sender, AuthStoreEvent e)
         {
-            Console.WriteLine("AuthStore_OnChange ");
+
             if (e is null || string.IsNullOrWhiteSpace(e.Token))
             {
                 MarkUserAsLoggedOut();
             }
             else
             {
-                Console.WriteLine("AuthStore_OnChange else");
-                await _localStorage.SetItemAsync<string>("token", e.Token);               
+
+                await _localStorage.SetItemAsync<string>("token", e.Token);
                 //await _localStorage.SetItemAsync<string>("Id", e.Model.Id); 
 
                 var claims = ParseClaimsFromJwt(e.Token);
@@ -43,12 +43,12 @@ namespace Thomprog
 
             }
 
-            Debug.WriteLine(e.Token);
+            //Debug.WriteLine(e.Token);
         }
 
         public async override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-           
+
             var savedToken = await _localStorage.GetItemAsync<string>("token");
 
             if (string.IsNullOrWhiteSpace(savedToken))
@@ -72,7 +72,7 @@ namespace Thomprog
 
         public void MarkUserAsAuthenticated(IEnumerable<Claim> claims)
         {
-            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "pocketbase"));           
+            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "pocketbase"));
             var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
 
             NotifyAuthenticationStateChanged(authState);
@@ -81,7 +81,7 @@ namespace Thomprog
         public async void MarkUserAsLoggedOut()
         {
             var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
-            var authState = Task.FromResult(new AuthenticationState(anonymousUser));                
+            var authState = Task.FromResult(new AuthenticationState(anonymousUser));
 
             //await _localStorage.ClearAsync();
 

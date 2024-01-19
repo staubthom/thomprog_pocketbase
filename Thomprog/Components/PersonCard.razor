@@ -44,56 +44,16 @@
     protected override async Task OnInitializedAsync()
 
     {
-         username = await DatabaseService.GetUsername();
-        //Util.Log(username);
-        string userid = await DatabaseService.GetUserId();
-        //Util.Log(userid);
-        string token = await DatabaseService.GetUserToken();
-        //Util.Log(token);
+         username = await DatabaseService.GetUsername();     
+        string userid = await DatabaseService.GetUserId();      
+        string token = await DatabaseService.GetUserToken();      
         first_name =  await DatabaseService.GetFirstName();
         last_name =  await DatabaseService.GetLastName();//    GetLastName();
 
-        //var result = await PocketBase.User.GetOneAsync("lhubc30ne4u778i");
-
-        //Util.Log(result);
-        //Util.Log(DatabaseService.GetUserToken());
-        //var user = authstate.Result.User;
-        //var name = user.Identity.Name;
-        //Console.WriteLine("User");
-        //Console.WriteLine(user.Identity.Name);
+  
 
     }
 
-    /*  [CascadingParameter]
-     protected Task<AuthenticationState> AuthState { get; set; } = default!;
-
-     private string? UserId { get; set; }
-     private string? Email { get; set; }
-     private string? FullName { get; set; }
-     private string? ImageUri { get; set; }
-
-     protected override async Task OnAfterRenderAsync(bool firstRender)
-         {
-         if (firstRender)
-             {
-             await LoadUserData();
-     }
-     }
-
-     private async Task LoadUserData()
-         {
-         var user = (await AuthState).User;
-         if (user.Identity?.IsAuthenticated == true)
-             {
-             if (string.IsNullOrEmpty(UserId))
-                 {
-                 FullName = user.GetFullName();
-                 UserId = user.GetUserId();
-                 Email = user.GetEmail();
-                 ImageUri = string.IsNullOrEmpty(user?.GetImageUrl()) ? string.Empty : (Config[ConfigNames.ApiBaseUrl] + user?.GetImageUrl());
-                 StateHasChanged();
-         }
-             }
-    } */
+    
 
 }

@@ -4,7 +4,7 @@
 
 
 <MudPaper Class="pa-4 ">
-<ThomTitle Title="Todos Private" Description="Keep things done" />
+    <ThomTitle Title="Todos Private" Description="Keep things done" />
     <br>
     <MudForm @ref="_form" @bind-IsValid="@_success" @bind-Errors="@_errors" ValidationDelay="0">
         <MudCard>
@@ -14,8 +14,8 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTextField Label="Title" @bind-Value="todos.First().name" For="@(() => todos.First().name)" Required="true"
-                    Immediate="true" />
+                <MudTextField Label="Title" @bind-Value="todos.First().name" For="@(() => todos.First().name)"
+                    Required="true" Immediate="true" />
             </MudCardContent>
             <MudCardActions>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_success)" Class="ml-auto"
@@ -102,7 +102,7 @@
                 <MudTd DataLabel="Name">@context?.name</MudTd>
                 <MudTd DataLabel="Id">@context?.Id</MudTd>
                 <MudTd DataLabel="Action">
-                    @* <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"
+                @* <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"
                         Size="MudBlazor.Size.Small"
                         OnClick="@( (e) => {NavigationManager.NavigateTo($"/todoitems/{context?.Todo?.Id}");})"
                         /> *@
@@ -116,11 +116,11 @@
         </MudTable>
     }-->
 
-</MudPaper> 
+</MudPaper>
 
-@code{
+@code {
     protected override async Task OnInitializedAsync()
-    {       
+    {
         await getEntrys();
     }
     private bool _success = false;
@@ -131,21 +131,16 @@
     private IEnumerable<TodoModel>? todosFiltered;
 
     private MudTable<TodoModel>? _table;
-   // ---------------- SELECT TABLE ---------------------------
+    // ---------------- SELECT TABLE ---------------------------
 
     private async Task getEntrys()
     {
         _loading = true;
         todos = await DatabaseService.GetCollection<TodoModel>("todos");
         //todos = await DatabaseService.GetCollectionById<TodoModel>("todos", "k7uc9rcy64m8djt");
-
         TodoModel item = new();
         //item.name = "Testeintrag1";
         item.Id = "k7uc9rcy64m8djt";
-        //item.test = "Testeintrag1";
-
-        //await DatabaseService.Update<TodoModel>("todos", item);
-        //Console.WriteLine(todos.First<TodoModel>().Name);
         _loading = false;
     }
 
@@ -160,12 +155,12 @@
     private async Task OnClickDelete(TodoModel item)
     {
         await DatabaseService.Delete<TodoModel>("todos", item);
-        
+
     }
 
     // ---------------- CREATE NEW ---------------------
 
-   
+
     private async Task OnClickSave()
     {
         TodoModel item = new();

@@ -13,54 +13,57 @@
 
 
 
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.TwoTone.Add" Color="Color.Primary" @onclick="CreateDialog">@L["Add User"]</MudButton>
+    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.TwoTone.Add" Color="Color.Primary"
+        @onclick="CreateDialog">@L["Add User"]</MudButton>
 
 
-        <MudTable Items="@profilesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
+    <MudTable Items="@profilesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
         SortLabel="Sort By" T="Profiles">
-            <ToolBarContent>
-                <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.TwoTone.Search"
-                IconSize="Size.Medium" Class="mt-0" Clearable="true"
-                ValueChanged="@(s=>OnValueChangedSearch(s))" Placeholder=@L["Search"] />
-            </ToolBarContent>
-            <HeaderContent>
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
-                        @L["Username"]
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.user_id)">
-                        User_id
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh>
-                    @L["Profile"]  
-                </MudTh>
+        <ToolBarContent>
+            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.TwoTone.Search"
+                IconSize="Size.Medium" Class="mt-0" Clearable="true" ValueChanged="@(s=>OnValueChangedSearch(s))"
+                Placeholder=@L["Search"] />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
+                    @L["Username"]
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.user_id)">
+                    User_id
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                @L["Profile"]
+            </MudTh>
 
-                        <MudTh> @L["Permissions"]  </MudTh>
+            <MudTh> @L["Permissions"] </MudTh>
 
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Title">@context?.email</MudTd>
-                <MudTd DataLabel="User_id">@context?.user_id</MudTd>
-                <MudTd DataLabel="Profile"> 
-                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Edit"  @onclick="@(()=>_nav.NavigateTo($"/account/{context?.user_id}"))" />                  
-                     </MudTd>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Title">@context?.email</MudTd>
+            <MudTd DataLabel="User_id">@context?.user_id</MudTd>
+            <MudTd DataLabel="Profile">
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Edit"
+                    @onclick="@(()=>_nav.NavigateTo($"/account/{context?.user_id}"))" />
+            </MudTd>
 
-                         <MudTd DataLabel=@L["Permissions"]>
-                             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.EmojiPeople"  @onclick="@(()=>_nav.NavigateTo($"/rights/{context?.user_id}"))" />                  
-                         </MudTd>   
+            <MudTd DataLabel=@L["Permissions"]>
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.EmojiPeople"
+                    @onclick="@(()=>_nav.NavigateTo($"/rights/{context?.user_id}"))" />
+            </MudTd>
 
-            </RowTemplate>
-            <PagerContent>
-                <MudTablePager PageSizeOptions="new int[]{50, 100}" />
-            </PagerContent>
-        </MudTable>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+        </PagerContent>
+    </MudTable>
 
 
-</MudPaper> 
-    @code{
+</MudPaper>
+@code {
 
     protected Profiles Model = new();
 
@@ -72,7 +75,6 @@
         parameters.Add(x => x.Color, Color.Info);
         var dialog = await DialogService.ShowAsync<CreateUserDialog>(@L["+Add User"], parameters);
         var result = await dialog.Result;
-        Console.WriteLine("UserDialog Back");
         await GetTable();
         StateHasChanged();
 
@@ -91,12 +93,12 @@
 
         var profiles_ienum = await DatabaseService.GetCollection<Profiles>("profiles");
         IReadOnlyList<Profiles> profiles = profiles_ienum.ToList();
-        profilesList = profiles;  
-        profilesListFiltered = profiles;  
+        profilesList = profiles;
+        profilesListFiltered = profiles;
         StateHasChanged();
     }
 
-     private void OnValueChangedSearch(string text)
+    private void OnValueChangedSearch(string text)
     {
         profilesListFiltered = profilesList?.Where(row => row.email.Contains(text)).ToList();
     }

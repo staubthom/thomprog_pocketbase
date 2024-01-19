@@ -234,8 +234,7 @@
     {
 
         string filepath = file.CollectionName + file.name;
-        byte[] downloadedBytes = null;//await StorageService.GetBookFromFile(bucket, filepath);
-        Console.WriteLine("Download beendet");
+        byte[] downloadedBytes = null;//await StorageService.GetBookFromFile(bucket, filepath);       
         QuillContent = System.Text.Encoding.Default.GetString(downloadedBytes);
         await this.QuillNative.LoadContent(QuillContent);
         StateHasChanged();
@@ -297,8 +296,7 @@
 
     public async void GetHTML()
     {
-        QuillHTMLContent = await this.QuillNative.GetHTML();
-        Console.WriteLine("QuillHTMLContent");
+        QuillHTMLContent = await this.QuillNative.GetHTML();       
         StateHasChanged();
     }
 

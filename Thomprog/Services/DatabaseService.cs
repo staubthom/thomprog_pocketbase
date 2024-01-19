@@ -44,7 +44,7 @@ namespace Thomprog.Services
 
            PocketBase PocketBase)
         {
-            logger.LogInformation("------------------- CONSTRUCTOR Databaseservices -------------------");
+            //logger.LogInformation("------------------- CONSTRUCTOR Databaseservices -------------------");
             _customAuthStateProvider = customAuthStateProvider;
             _localStorage = localStorage;
             _logger = logger;
@@ -64,20 +64,14 @@ namespace Thomprog.Services
                 var result = await _client.Login(username!, password!);
                 if (result.IsSuccess)
                 {
-                    //_util.Log(result.Value);
+
                     SetUserId(result.ValueOrDefault.Model.Id);
                     SetUserToken(result.ValueOrDefault.Token);
-
-                    Console.WriteLine("Login Successfull");
-
                     login = true;
                     var claims = PocketBaseAuthenticationStateProvider.ParseClaimsFromJwt(result.Value.Token);
                     ((PocketBaseAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(claims);
-                    //NavigationManager.NavigateTo("/");
+
                     await GetUserModel();
-
-
-
                     return login;
                 }
 
@@ -98,19 +92,15 @@ namespace Thomprog.Services
                 var result = await _client.Refresh();
                 if (result.IsSuccess)
                 {
-                    //_util.Log(result.Value);
+
                     SetUserId(result.ValueOrDefault.Model.Id);
                     SetUserToken(result.ValueOrDefault.Token);
-
-                    Console.WriteLine("Login Successfull");
 
                     login = true;
                     var claims = PocketBaseAuthenticationStateProvider.ParseClaimsFromJwt(result.Value.Token);
                     ((PocketBaseAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(claims);
-                    //NavigationManager.NavigateTo("/");
+
                     await GetUserModel();
-
-
                     return login;
                 }
 
@@ -235,66 +225,44 @@ namespace Thomprog.Services
 
         public async Task<IEnumerable<T>> GetCollection<T>(string tablename, string? filter = null) where T : BaseModel, new()
         {
-            //_util.Log("Databaseservice");
+
             var modeledResponse = await _client.GetCollection<T>(tablename, filter: filter);
             return modeledResponse;
         }
 
         public async Task<IEnumerable<T>> GetRecordById<T>(string tablename, string id) where T : BaseModel, new()
         {
-            //_util.Log("Databaseservice");
+
             var modeledResponse = await _client.GetRecordById<T>(tablename, id);
-            //_util.Log("Databaseservice");
-            //_util.Log(modeledResponse);
             return modeledResponse;
         }
 
         public async Task<IEnumerable<T>> GetRecordByUserId<T>(string tablename, string userid) where T : BaseModel, new()
         {
-            //_util.Log("Databaseservice");
+
             var modeledResponse = await _client.GetRecordByUserId<T>(tablename, userid);
-            //_util.Log("Databaseservice");
-            //_util.Log(modeledResponse);
             return modeledResponse;
         }
 
         public async Task<IEnumerable<T>> Insert<T>(string tablename, T item, IEnumerable<IFile>? files = null) where T : BaseModel, new()
         {
-            Console.WriteLine("Databaseservice Insert");
-            var modeledResponse = await _client.Insert(tablename, item, files);
-            Console.WriteLine("modeledResponse");
-            //_util.Log(modeledResponse);
 
-            Console.WriteLine("modeledResponse insert End");
-            //Console.WriteLine("modeledResponse.Value");
-            //_util.Log(modeledResponse.Value);            
+            var modeledResponse = await _client.Insert(tablename, item, files);
             return modeledResponse;
 
         }
 
         public async Task<IEnumerable<T>> Update<T>(string tablename, T item) where T : BaseModel, new()
         {
-            //Console.WriteLine("Databaseservice Update");         
-            var modeledResponse = await _client.Update(tablename, item);
-            // Console.WriteLine("modeledResponse");
-            //_util.Log(modeledResponse);
 
-            // Console.WriteLine("modeledResponse insert End");
-            //Console.WriteLine("modeledResponse.Value");
-            //_util.Log(modeledResponse.Value);            
+            var modeledResponse = await _client.Update(tablename, item);
             return modeledResponse;
         }
 
         public async Task<IEnumerable<T>> UpdateAsyncWithFile<T>(string tablename, T item, IEnumerable<IFile>? files = null) where T : BaseModel, new()
         {
-            Console.WriteLine("UpdateAsyncWithFile");
-            var modeledResponse = await _client.UpdateAsyncWithFile<T>(tablename, item, files);
-            // Console.WriteLine("modeledResponse");
-            //_util.Log(modeledResponse);
 
-            // Console.WriteLine("modeledResponse insert End");
-            //Console.WriteLine("modeledResponse.Value");
-            //_util.Log(modeledResponse.Value);            
+            var modeledResponse = await _client.UpdateAsyncWithFile<T>(tablename, item, files);
             return modeledResponse;
         }
 
@@ -302,12 +270,7 @@ namespace Thomprog.Services
         {
 
             var modeledResponse = await _client.GetRecordWhereRecordContains<T>(tablename, search);
-            Console.WriteLine("modeledResponse");
-            //_util.Log(modeledResponse);
 
-            Console.WriteLine("modeledResponse insert End");
-            //Console.WriteLine("modeledResponse.Value");
-            //_util.Log(modeledResponse.Value);            
             return modeledResponse;
 
         }
@@ -321,29 +284,16 @@ namespace Thomprog.Services
 
         public async Task<IEnumerable<T>> Delete<T>(string tablename, T item) where T : BaseModel, new()
         {
-            Console.WriteLine("Databaseservice Insert");
-            var modeledResponse = await _client.Delete(tablename, item);
-            Console.WriteLine("modeledResponse");
-            //_util.Log(modeledResponse);
 
-            Console.WriteLine("modeledResponse insert End");
-            //Console.WriteLine("modeledResponse.Value");
-            //_util.Log(modeledResponse.Value);            
+            var modeledResponse = await _client.Delete(tablename, item);
             return modeledResponse;
 
         }
 
         public async Task<int> GetCollectionCount<T>(string tablename, string? filter = null) where T : BaseModel, new()
         {
-            Console.WriteLine("Databaseservice Count");
+
             var modeledResponse = await _client.GetCollectionCount<T>(tablename, filter);
-
-            Console.WriteLine("modeledResponse");
-            //_util.Log(modeledResponse);
-
-            Console.WriteLine("modeledResponse insert End");
-            //Console.WriteLine("modeledResponse.Value");
-            //_util.Log(modeledResponse.Value);            
             return modeledResponse;
         }
     }

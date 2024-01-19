@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 namespace Thomprog.Services;
 
 public class RightsService
-{ 
+{
 
     [Inject]
 
@@ -20,24 +20,20 @@ public class RightsService
     private readonly ILocalStorageService _localStorage;
     private readonly ILogger<DatabaseService> _logger;
     private readonly IDialogService _dialogService;
-   
 
-    public RightsService (
+
+    public RightsService(
         ILocalStorageService localStorage,
         ILogger<DatabaseService> logger,
         IDialogService dialogService,
         DatabaseService DatabaseService
-       
-
         )
     {
-
-        Console.WriteLine("RightsService");
 
         _DatabaseService = DatabaseService;
         _logger = logger;
         _dialogService = dialogService;
-    
+
         _localStorage = localStorage;
         _dialogService = dialogService;
     }
@@ -50,71 +46,69 @@ public class RightsService
 
     //Get the Preferences from the Database
     public async Task<bool> GetRights()
-    {  
-       Console.WriteLine("RightService GetRights");
-       // var userid = await _localStorage.GetItemAsync<string>("Id");  //Rechteproblem? 
+    {
+
+
 
         var userid = await _localStorage.GetItemAsync<string>("Id"); // await _DatabaseService.GetUserId();//   
         if (userid is not null)
-          {
-             Console.WriteLine("RightService GetUserID() is not null)"); 
+        {
+
             await _DatabaseService.authRefresh();
-            var rights = await _DatabaseService.GetRecordByUserId<Rights>("rights", userid); 
-            Console.WriteLine(rights);
+            var rights = await _DatabaseService.GetRecordByUserId<Rights>("rights", userid);
+
             foreach (var item in rights)
             {
 
-                    SetcanViewProfile(item.canViewProfile);
-                    SetcanViewAdministrationGroup(item.canViewAdministrationGroup);
-                    SetcanManageUsers(item.canManageUsers);
-                    SetcanManageRoles(item.canManageRoles);
+                SetcanViewProfile(item.canViewProfile);
+                SetcanViewAdministrationGroup(item.canViewAdministrationGroup);
+                SetcanManageUsers(item.canManageUsers);
+                SetcanManageRoles(item.canManageRoles);
 
                 string output = JsonConvert.SerializeObject(item);
-                Console.WriteLine(output); 
-                //await _localStorage.SetItemAsStringAsync("thomprog",output );
 
-                }
-
-                Console.WriteLine("RightService User"); 
-                return true;
-            }
-            else
-            {
-                 Console.WriteLine("RightService No User"); 
-                return false;
             }
 
-    }
 
-    public  void SetcanViewProfile(bool _canViewProfile)
-    {       
+            return true;
+        }
+        else
+        {
 
-       canViewProfile = _canViewProfile;        
-        NotifyStateChanged();    
-
-    }
-
-    public  void SetcanViewAdministrationGroup(bool _canViewAdministrationGroup)
-    {       
-
-       canViewAdministrationGroup = _canViewAdministrationGroup;        
-        NotifyStateChanged();    
+            return false;
+        }
 
     }
 
-    public  void SetcanManageUsers(bool _canManageUsers)
-    {       
+    public void SetcanViewProfile(bool _canViewProfile)
+    {
 
-       canManageUsers = _canManageUsers;        
-        NotifyStateChanged();    
+        canViewProfile = _canViewProfile;
+        NotifyStateChanged();
 
     }
 
- public  void SetcanManageRoles(bool _canManageRoles)
-    {       
+    public void SetcanViewAdministrationGroup(bool _canViewAdministrationGroup)
+    {
 
-       canManageRoles = _canManageRoles;        
-        NotifyStateChanged();    
+        canViewAdministrationGroup = _canViewAdministrationGroup;
+        NotifyStateChanged();
+
+    }
+
+    public void SetcanManageUsers(bool _canManageUsers)
+    {
+
+        canManageUsers = _canManageUsers;
+        NotifyStateChanged();
+
+    }
+
+    public void SetcanManageRoles(bool _canManageRoles)
+    {
+
+        canManageRoles = _canManageRoles;
+        NotifyStateChanged();
 
     }
 

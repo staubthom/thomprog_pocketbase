@@ -136,7 +136,7 @@
                 _imageUrl = "";
             }
 
-            Console.WriteLine(_imageUrl);
+            
             if (first_name?.Length > 0)
             {
                 _firstLetterOfFirstName = first_name.ToUpper().FirstOrDefault(); 
@@ -194,57 +194,19 @@
             }
             var imageFile = await file.RequestImageFileAsync(ApplicationConstants.StandardImageFormat, ApplicationConstants.MaxImageWidth, ApplicationConstants.MaxImageHeight);
 
-            //IBrowserFile browserFile = e.File;// Ihr IBrowserFile-Objekt hier
+         
 
             IEnumerable<pocketbase_csharp_sdk.Models.Files.IFile> fileEnumerable = FileUploadHelper.ConvertToIFileEnumerable(imageFile, "avatar");
 
             if (file is not null)
             {
-                Model.Id = Id;
-                //var response = await PocketBase.Collection("profiles").CreateAsync<Profiles>(Model, files: fileEnumerable);
-                //var response = await PocketBase.Collection("profiles").UpdateAsyncWithFile<Profiles>(Model, files: fileEnumerable);
+                Model.Id = Id;                
                 var response = await DatabaseService.UpdateAsyncWithFile<Profiles>("profiles", Model, fileEnumerable);
             }
             GetTable();
         }
 
-        /*  var file = e.File;
-         if (file is not null)
-         {
-             string? extension = Path.GetExtension(file.Name);
-             if (!ApplicationConstants.SupportedImageFormats.Contains(extension.ToLower()))
-             {
-                 Snackbar.Add("Image Format Not Supported.", Severity.Error);
-                 return;
-             }
-             string? fileName = $"{userId}-{Guid.NewGuid():N}";
-             fileName = fileName[..Math.Min(fileName.Length, 90)];
-             var imageFile = await file.RequestImageFileAsync(ApplicationConstants.StandardImageFormat, ApplicationConstants.MaxImageWidth, ApplicationConstants.MaxImageHeight);
-             byte[]? buffer = new byte[imageFile.Size];
-             await imageFile.OpenReadStream(ApplicationConstants.MaxAllowedSize).ReadAsync(buffer);
-             string? base64String = $"data:{ApplicationConstants.StandardImageFormat};base64,{Convert.ToBase64String(buffer)}";
-             Console.WriteLine(base64String);
-             _imageUrl = base64String;
-
-             ByteArrayContent byteArrayContent = new ByteArrayContent(buffer, 0, buffer.Length);
-             var image = byteArrayContent;
-             MultipartFormDataContent form = new MultipartFormDataContent();
-
-             Model.Id = Id;
-             Model.user_id = userId;
-             Model.email = email;
-             Model.first_name = first_name;
-             Model.last_name = last_name;
-             Model.phone = phone;
-             Model.avatar = file;
-
-             await DatabaseService.Update<Profiles>("profiles", Model);
-
-             Snackbar.Add("Your Profile has been updated. Please Login again to Continue.", Severity.Success);
-
-             //await UpdateProfileAsync();
-
-             */
+        
     }
 
 public static class ApplicationConstants
