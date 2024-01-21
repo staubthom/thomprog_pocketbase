@@ -1,6 +1,6 @@
 # Thomprog  :construction:
 This programme was created purely out of curiosity about how to create a frontend with [MudBlazor](https://mudblazor.com/) and [Pocketbase](https://pocketbase.io/). As I couldn't find anything on the net that met my requirements, I ended up programming something myself. The Thomprog is available to anyone who wants to continue using it. Documentation will follow here shortly. 
-## Start Backend
+## Start Backend :crystal_ball:
   
 
 Change to the pocketbase directory in the terminal and execute the following command:
@@ -18,6 +18,8 @@ Looks like this:
 ![Terminalprompt](/doc/promt_pb.jpg "Terminalprompt")
 
 For more information, see Readme in Pocketbase folder.
+
+## Start Frontend :computer:
 
 In the thomprog directory run:
 
