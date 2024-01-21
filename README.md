@@ -53,7 +53,7 @@ Then you will see the following:
 
 ## More Links to get inspired
 I used the following Librarys to create the Thomprog
-- [pocketbase-csharp-sdk](https://github.com/iluvadev/PocketBaseClient/tree/main/sdk/pocketbase-csharp-sdk)
+- [pocketbase-csharp-sdk](https://github.com/PRCV1/pocketbase-csharp-sdk)
 
 - [MudBlazor](https://mudblazor.com/) 
 - [Pocketbase](https://pocketbase.io/).  
