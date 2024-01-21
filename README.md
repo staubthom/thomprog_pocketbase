@@ -66,3 +66,7 @@ I got some inspiration from the following links:
 I learnd a lot from the following links:
 [Julio Casal](https://juliocasal.com/ )
 
+
+## Support my work :heart:
+If you like my work and want to support me, I would be very happy about a small donation. 
+<a href="https://www.buymeacoffee.com/potenzialentwickler" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
