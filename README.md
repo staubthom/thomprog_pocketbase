@@ -37,21 +37,26 @@ This starts the frontend you can now access the frontend via the following URL:
 ![Frontend](/doc/frontend.jpg "Frontend")
 
 You can log in with the following credentials:
-
+    Admin
     Username: demo
     Password: demo12345!
+
+    User
+    Username: user
+    Password: user12345!
 
 ![Login](/doc/login.jpg "Login")
 
 Then you will see the following:
 ![Thomprog](/doc/thomprog.jpg "Thomprog")
 
-- Now you can start to create your own ToDo's.
+- Now you can start to create your ToDo's.
 - Record a Voice Message and save it. 
 - Upload a Picture or a File and save it.
 - Edit a HTML Text and save it.
 - Manage Users and Roles.
 
+At the moment all User sees the documents of all other users.
 
 ## More Links to get inspired
 I used the following Librarys to create the Thomprog

@@ -22,10 +22,17 @@
 
 <MudPaper Class="d-flex align-center  mud-width-full py-8 ">
     <div style="margin-left: 20px; margin-right:20px">
-        <MudText Typo="Typo.subtitle2">@L["Folder"] : "@file.virtualFolder"</MudText>
+       <!-- <MudText Typo="Typo.subtitle2">@L["Folder"] : "@file.virtualFolder"</MudText> -->
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Save" OnClick="@(async (_) => {await save_html();})">@L["Save"]  </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.InsertDriveFile" OnClick="@(async (_) => {await new_html();})">@L["New"]  </MudButton>
+           
+           <MudToggleIconButton Toggled="@EditorOn"
+                     Icon="@Icons.Material.Filled.CreditCardOff" Color="@Color.Error" Title="Inline Editor"
+                     ToggledIcon="@Icons.Material.Filled.CreditCard" ToggledColor="@Color.Success" ToggledTitle="Big Editor"  ToggledChanged ="ToggleQuillEditor"/>
 
+                    <span> @(EditorOn ? "Big" : "Inline") Editor</span>
+           
+           
             <br>
             <MudTextField Class="pt-4" @bind-Value="file.name" Label=@L["Filename"] Variant="Variant.Outlined"></MudTextField>
             <br>
@@ -36,9 +43,14 @@
         }
         else
         {
-
-            <BlazoredTextEditor @ref="@QuillNative"
-                                Placeholder="Enter non HTML format like centering...">
+            
+            
+                 @if (EditorOn)   
+                 { 
+                    <BlazoredTextEditor @ref="@QuillNative"
+                                DebugLevel="false"
+                                Theme="snow"
+                                Placeholder="Enter your Text...">                         
                 <ToolbarContent>
                     <select class="ql-header">
                         <option selected=""></option>
@@ -87,19 +99,11 @@
                             <option value="right"></option>
                             <option value="justify"></option>
                         </select>
-                    </span>
-                   
-
-
+                    </span>  
                     <span class="ql-formats">
                         <button class="ql-blockquote"></button>
                         <button class="ql-code-block"></button>
                     </span>
-                   
-
-                 
-                    
-            
                     <span class="ql-formats">
                         <button class="ql-link"></button>
                         <button class="ql-image"></button>
@@ -113,12 +117,58 @@
                         <button class="ql-direction" value="rtl"></button>
 
                     </span>
-                     
-                     
-                         
-
                 </ToolbarContent>
-            </BlazoredTextEditor>
+                 </BlazoredTextEditor>
+                }
+                else
+                {
+
+                     <BlazoredTextEditor @ref="@QuillNative"
+                                DebugLevel="false"
+                                Theme="bubble"
+                                Placeholder="Enter your Text...">     
+                    <ToolbarContent>
+                    <span class="ql-formats">
+                    <select class="ql-header">
+                        <option selected=""></option>
+                        <option value="1"></option>
+                        <option value="2"></option>
+                        <option value="3"></option>
+                        <option value="4"></option>
+                        <option value="5"></option>
+                    </select>
+                    </span>
+      
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                        <button class="ql-strike"></button>                      
+                    </span>
+
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                 
+                    <span class="ql-formats">
+                        <button class="ql-indent" value="+1"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <select class="ql-align">
+                            <option selected=""></option>
+                            <option value="center"></option>
+                            <option value="right"></option>
+                            <option value="justify"></option>
+                        </select>
+                    </span>
+                   
+                </ToolbarContent>
+                 </BlazoredTextEditor>
+
+                }
+           
         }
 
         <br>
@@ -140,13 +190,18 @@
     // Quill editor
     public const string FormatDateTimeStamp = "yyyy_MM_dd__HH_mm_ss_ffff";
 
+    BlazoredTextEditor QuillNative;
+    string QuillHTMLContent;
+    string QuillContent;
+    bool isLoading = false;
+   
+
+    public bool EditorOn { get; set; } = false;
+
     protected override async Task OnInitializedAsync()
     {
         if (file.Id == null)
         {
-
-           
-
             file.name = "Note.html";
             
             file.filetype = ".html";
@@ -164,6 +219,21 @@
         }
 
     }
+
+
+    async Task ToggleQuillEditor()
+	{
+		
+        var QuillContent_temp = await this.QuillNative.GetHTML();
+        
+        EditorOn= !EditorOn;
+        
+        StateHasChanged();
+       
+       await this.QuillNative.LoadHTMLContent(QuillContent_temp);       
+      
+		
+	}
 
     private async Task save_json()
     {
@@ -271,7 +341,7 @@
                 fileBytes = ms.ToArray();
             }
 
-            QuillContent = System.Text.Encoding.Default.GetString(fileBytes).Trim(new char[] { '\uFEFF' }); ; // Entfern BOM Byte Order Mark
+            QuillContent = System.Text.Encoding.Default.GetString(fileBytes).Trim(new char[] { '\uFEFF' }); ; // Removes BOM Byte Order Mark
 
            
 
@@ -289,10 +359,7 @@
         return pOut;
     }
 
-    BlazoredTextEditor QuillNative;
-    string QuillHTMLContent;
-    string QuillContent;
-    bool isLoading = false;
+   
 
     public async void GetHTML()
     {

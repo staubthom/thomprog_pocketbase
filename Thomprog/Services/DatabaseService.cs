@@ -9,6 +9,7 @@ using pocketbase_csharp_sdk.Models.Files;
 using Thomprog.Components.ThemeManager;
 using Thomprog.Models;
 using static MudBlazor.CategoryTypes;
+using Thomprog.Options;
 
 namespace Thomprog.Services
 {
@@ -32,6 +33,7 @@ namespace Thomprog.Services
         private readonly ILocalStorageService _localStorage;
         private readonly ILogger<DatabaseService> _logger;
         private readonly IDialogService _dialogService;
+        
 
         private readonly PocketBase _PocketBase;
 
@@ -40,8 +42,7 @@ namespace Thomprog.Services
            AuthenticationStateProvider customAuthStateProvider,
            ILocalStorageService localStorage,
            ILogger<DatabaseService> logger,
-           IDialogService dialogService,
-
+           IDialogService dialogService,           
            PocketBase PocketBase)
         {
             //logger.LogInformation("------------------- CONSTRUCTOR Databaseservices -------------------");
@@ -51,6 +52,7 @@ namespace Thomprog.Services
             _dialogService = dialogService;
             _client = client;
             _PocketBase = PocketBase;
+            
 
 
         }
@@ -182,8 +184,25 @@ namespace Thomprog.Services
 
         public async Task<string> GetAvatar()
         {
-            await GetUserModel();
-            return avatar;
+           
+           
+            userid = await _localStorage.GetItemAsync<string>("Id");
+            string ImageUri = "";
+            var profiles_ienum = await GetRecordByUserId<Profiles>("profiles", userid);
+            List<Profiles> profiles = profiles_ienum.ToList();
+            foreach (var item in profiles)
+            {               
+                var avatar = item.avatar;            
+                if (!string.IsNullOrEmpty(avatar))
+                {
+                    ImageUri  = "api/files/" + item.CollectionId + "/" + item.Id + "/" + item.avatar;
+                }
+                else
+                {
+                    ImageUri = "";
+                }    
+            }  
+            return ImageUri;
         }
         public async Task<string> GetUsername()
         {

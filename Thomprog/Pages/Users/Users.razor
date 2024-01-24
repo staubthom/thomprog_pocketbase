@@ -8,7 +8,11 @@
 @inject IDialogService DialogService
 @inject NavigationManager _nav
 
+
+
 <MudPaper Class="pa-4 ">
+    @if (RightsService.canManageUsers)
+    {
     <ThomTitle Title=@L["Users"] Description=@L["Manage Users"] />
 
 
@@ -60,6 +64,13 @@
             <MudTablePager PageSizeOptions="new int[]{50, 100}" />
         </PagerContent>
     </MudTable>
+    }
+    else
+    {
+       
+         <ThomTitle Title=@L["Users"] Description=@L["You do not have this Permission"] />
+         
+    }
 
 
 </MudPaper>

@@ -116,6 +116,8 @@
                         <MudNavLink Href="/account" Icon="@Icons.Material.TwoTone.ManageAccounts">@L["Account"]</MudNavLink>
                         <MudDivider Class="my-2" />
                         }
+                    @if (RightsService.canViewAdministrationGroup)
+                    {
 
                         <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3">@L["Administration"]</MudText>
                         <MudNavGroup Title="Admin" Expanded Icon="@Icons.Material.TwoTone.AddBox">
@@ -124,6 +126,7 @@
 
                         </MudNavGroup>
                         <MudDivider Class="my-2" />
+                        }
 
                 </Authorized>
             </AuthorizeView>

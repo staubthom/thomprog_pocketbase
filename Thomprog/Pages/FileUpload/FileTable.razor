@@ -209,7 +209,7 @@
 
         parameters.Add("file", file);
 
-        var dialog = DialogService.Show<ViewerDialog>("Edit File", parameters, options);
+        var dialog = DialogService.Show<ViewerDialog>("View File", parameters, options);
         var result = await dialog.Result;
         await GetTable();
         StateHasChanged();

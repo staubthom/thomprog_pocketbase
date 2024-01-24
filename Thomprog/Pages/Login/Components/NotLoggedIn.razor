@@ -6,8 +6,10 @@
         <MudContainer Class="d-flex flex-column justify-center" style="width: 450px">
             <MudText Typo="Typo.h5">@L["Welcome"]</MudText>
                 <br>
-            <MudTextField Label="Email" @bind-Value="Username" Variant="Variant.Outlined" AdornmentColor="Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.TwoTone.AccountCircle"></MudTextField>
-                <MudTextField Label="Password" @bind-Value="Password" Variant="Variant.Outlined" AdornmentColor="Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.TwoTone.Lock" InputType="InputType.Password"></MudTextField>
+            <MudTextField Label="Email" @bind-Value="Username" Variant="Variant.Outlined" AdornmentColor="Color.Primary" Adornment="Adornment.End" AdornmentIcon="@Icons.TwoTone.AccountCircle"></MudTextField>
+               
+            <MudTextField  @bind-Value="Password" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput"  AdornmentColor="Color.Primary" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonPasswordClick" AdornmentAriaLabel="Show Password" />
+
                 <br>
             <MudButton Variant="Variant.Filled" FullWidth Color="Color.Primary"  StartIcon="@Icons.Material.TwoTone.Login"
                         OnClick="LoginAsync">Login</MudButton>
@@ -57,5 +59,24 @@
             return false;
         }
         return true;
+    }
+
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void ButtonPasswordClick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
     }
  }

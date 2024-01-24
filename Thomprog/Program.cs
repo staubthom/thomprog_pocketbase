@@ -23,12 +23,9 @@ builder.Services.Configure<PocketBaseOptions>(pbConfigurationSection);
 
 var pbOptions = pbConfigurationSection.Get<PocketBaseOptions>();
 
-
-
 //Authentication
 builder.Services.AddScoped<AuthenticationStateProvider, PocketBaseAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
-
 
 builder.Services.AddSingleton<PocketBase>(sp =>
 {
@@ -57,11 +54,9 @@ builder.Services.AddScoped<PocketBaseService>();
 
 
 
-
 //builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<PreferenceService>();
 builder.Services.AddScoped<RightsService>();
-
 
 
 

@@ -1,8 +1,9 @@
-﻿
+﻿@using Thomprog.Models
+@using Thomprog.Options;
 
 <MudCard Elevation="0" Square="true" Class="@Class" Style="@Style">
     <MudCardHeader style="padding:10px!important">
-        <CardHeaderAvatar>
+        <CardHeaderAvatar>            
             @if (string.IsNullOrEmpty(this.ImageUri))
             {
                 <MudAvatar Color="Color.Primary" Variant="Variant.Outlined">
@@ -41,16 +42,33 @@
     [Parameter]
     public string? Style { get; set; }
 
+     public string? Id { get; set; }
+    public PocketBaseOptions pocketBaseOptions = new();
+
     protected override async Task OnInitializedAsync()
 
     {
          username = await DatabaseService.GetUsername();     
         string userid = await DatabaseService.GetUserId();      
-        string token = await DatabaseService.GetUserToken();      
-        first_name =  await DatabaseService.GetFirstName();
-        last_name =  await DatabaseService.GetLastName();//    GetLastName();
+        //string token = await DatabaseService.GetUserToken();      
+        //first_name =  await DatabaseService.GetFirstName();
+        //last_name =  await DatabaseService.GetLastName();//    GetLastName();
+        ImageUri = await DatabaseService.GetAvatar();
+       if (string.IsNullOrEmpty(ImageUri))
+       { 
+        ImageUri ="";
 
+       }
+       else
+       {
+        ImageUri = pocketBaseOptions.BaseUrl +ImageUri;
+       }
+        
+
+      
+        StateHasChanged();
   
+        
 
     }
 
