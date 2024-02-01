@@ -82,11 +82,19 @@ namespace pocketbase_csharp_sdk.Sse
                     throw new InvalidOperationException("Invalid resource content type");
 
                 //TODO this never completes
+                Console.WriteLine("Connected SseClient Zeile 85");
+                
                 var stream = await response.Content.ReadAsStreamAsync(token);
-                var buffer = new byte[4096];
+                var buffer = new byte[1];
+                    
+                Console.WriteLine(token);
                 while (!token.IsCancellationRequested)
                 {
+
+                    Console.WriteLine("Connected SseClient Zeile 92"); 
                     var readCount = await stream.ReadAsync(buffer, token);
+                   
+                    Console.WriteLine(readCount);
                     if (readCount > 0)
                     {
                         var data = Encoding.UTF8.GetString(buffer, 0, readCount);
@@ -97,6 +105,7 @@ namespace pocketbase_csharp_sdk.Sse
                             {
                                 Id = sseMessage.Id;
                                 IsConnected = true;
+                                Console.WriteLine( sseMessage.Id);
                             }
                             await CallbackAsync(sseMessage);
                         }

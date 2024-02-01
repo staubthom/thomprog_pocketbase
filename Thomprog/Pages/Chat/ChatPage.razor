@@ -1,0 +1,22 @@
+﻿@page "/chat"
+@using pocketbase_csharp_sdk;
+@using System.Collections;
+@using pocketbase_csharp_sdk.Models;
+@using pocketbase_csharp_sdk.Models.Files;
+
+@code
+{
+  protected override async Task OnInitializedAsync()
+    {
+        await DatabaseService.Realtime("posts");
+        Console.WriteLine("Init");
+        
+        }
+
+
+        
+
+       
+       
+}
+ 

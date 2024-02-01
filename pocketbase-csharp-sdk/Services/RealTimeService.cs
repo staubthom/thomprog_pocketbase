@@ -23,6 +23,7 @@ namespace pocketbase_csharp_sdk.Services
         private async Task RealTimeCallBackAsync(SseMessage message)
         {
             var messageEvent = message.Event ?? "";
+            Console.WriteLine($"RealTimeCallBackAsync: {messageEvent}");
             if (_subscriptions.ContainsKey(messageEvent))
                 foreach (var callBack in _subscriptions[messageEvent])
                     await callBack(message);
@@ -30,6 +31,7 @@ namespace pocketbase_csharp_sdk.Services
 
         public async Task SubscribeAsync(string subscription, Func<SseMessage, Task> callback)
         {
+            // If the subscription is not already in the list, we add it
             if (!_subscriptions.ContainsKey(subscription))
             {
                 // New subscription
@@ -79,6 +81,8 @@ namespace pocketbase_csharp_sdk.Services
 
         private async Task SubmitSubscriptionsAsync()
         {
+            
+            // If there is no more subscriptions, we disconnect the SSE client
             if (!_subscriptions.Any())
                 SseClient.Disconnect();
             else
@@ -90,6 +94,8 @@ namespace pocketbase_csharp_sdk.Services
                     { "subscriptions", _subscriptions.Keys.ToList() }
                 };
 
+                // We send the subscriptions to the server
+               
                 await _client.SendAsync(BasePath(), HttpMethod.Post, body: body);
             }
         }

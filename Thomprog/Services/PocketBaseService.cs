@@ -6,6 +6,7 @@ using pocketbase_csharp_sdk;
 using System.Collections;
 using pocketbase_csharp_sdk.Models;
 using pocketbase_csharp_sdk.Models.Files;
+using pocketbase_csharp_sdk.Sse;
 
 namespace Thomprog.Services
 {
@@ -51,6 +52,7 @@ namespace Thomprog.Services
 
             return await _PocketBase.User.AuthenticateWithPasswordAsync(username!, password!);
 
+
         }
 
 
@@ -74,7 +76,6 @@ namespace Thomprog.Services
                 username = user.Username,
 
             };
-
 
             return userModel;
 
@@ -253,10 +254,39 @@ namespace Thomprog.Services
                 return 0;
             }
 
-
-
-
         }
+
+        //Realtime
+
+        
+       
+        public async Task Realtime(string tablename)
+        {
+             Console.WriteLine("sub");
+            _PocketBase.Collection("posts").Subscribe("*", dothing); 
+           
+
+            
+        }
+
+        private Task dothing(SseMessage message)
+        {
+            Console.WriteLine("dothing");
+            return Task.CompletedTask;
+        }
+
+        
+      
+
+       
+
+
+
+
+
+
+
+
 
 
 

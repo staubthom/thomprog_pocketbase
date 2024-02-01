@@ -315,5 +315,13 @@ namespace Thomprog.Services
             var modeledResponse = await _client.GetCollectionCount<T>(tablename, filter);
             return modeledResponse;
         }
+
+
+         public  async Task Realtime(string tablename ) 
+        {
+            await authRefresh();
+            await _client.Realtime(tablename);
+        }
+
     }
 }
