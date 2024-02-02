@@ -1,6 +1,8 @@
 ﻿using FluentResults;
+using pocketbase_csharp_sdk.Services.Interfaces;
 using pocketbase_csharp_sdk.Enum;
 using pocketbase_csharp_sdk.Services.Base;
+using pocketbase_csharp_sdk.Models;
 
 namespace pocketbase_csharp_sdk.Services
 {
@@ -15,11 +17,15 @@ namespace pocketbase_csharp_sdk.Services
 
         private readonly PocketBase _client;
         readonly string _collectionName;
+        private IRealtimeServiceBase _realtimeService;
 
-        public RecordService(PocketBase client, string collectionName) : base(client, collectionName)
+
+
+        public RecordService(PocketBase client, string collectionName, IRealtimeServiceBase realtimeService) : base(client, collectionName)
         {
             this._collectionName = collectionName;
             this._client = client;
+            this._realtimeService = realtimeService;
         }
 
         private Uri GetFileUrl(string recordId, string fileName, IDictionary<string, object?>? query = null)
@@ -40,6 +46,30 @@ namespace pocketbase_csharp_sdk.Services
 
             return _client.GetStreamAsync(url, query, cancellationToken);
         }
+
+
+
+
+        public void Subscribe(string topic, Action<RealtimeEventArgs> callbackFun)
+        {
+           
+
+            _realtimeService.Subscribe(topic, callbackFun, _collectionName);
+        }
+
+
+        /// <summary>
+        /// Unsubscribe from the current collection
+        /// </summary>
+        public void UnSubscribe(string topic)
+        {
+            _realtimeService.UnSubscribe(topic);
+        }
+        /// <summary>
+        /// unsubscribe all listeners from the specified topic
+        /// </summary>
+        /// <param name="topic">the topic to unsubscribe from</param>
+
 
     }
 }

@@ -67,6 +67,7 @@ I used the following Librarys to create the Thomprog
 
 I got some inspiration from the following links:
 [Fullstackhero](https://fullstackhero.net/ )
+[namin-amin/pocketbase.NET](https://github.com/namin-amin/pocketbase.NET/tree/master/uitest/Pages )
 
 I learnd a lot from the following links:
 [Julio Casal](https://juliocasal.com/ )

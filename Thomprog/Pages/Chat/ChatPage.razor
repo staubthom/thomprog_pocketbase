@@ -4,19 +4,41 @@
 @using pocketbase_csharp_sdk.Models;
 @using pocketbase_csharp_sdk.Models.Files;
 
+@attribute [StreamRendering(true)]
 @code
 {
   protected override async Task OnInitializedAsync()
     {
-        await DatabaseService.Realtime("posts");
-        Console.WriteLine("Init");
+        await DatabaseService.Realtime("posts", "*", dothing);      
         
+    }
+
+    private void dothing(RealtimeEventArgs obj)
+    {
+        Console.WriteLine("Juhu1");
+        Console.WriteLine(obj.data);
+        Console.WriteLine(obj.data.record);
+        Console.WriteLine(obj.ToString());
+        //Console.WriteLine(obj.data.action);
+        if (obj.data.action == "create")
+        {
+            Console.WriteLine("create");
+            Console.WriteLine(obj.data.record.ToString());
         }
+        if (obj.data.action == "update")
+        {
+            Console.WriteLine("update");
+            Console.WriteLine(obj.data.record.ToString());
+        }
+        if (obj.data.action == "delete")
+        {
+            Console.WriteLine("delete");
+            Console.WriteLine(obj.data.record.ToString());
+        }
+    
+    }
 
-
-        
-
-       
+ 
        
 }
  

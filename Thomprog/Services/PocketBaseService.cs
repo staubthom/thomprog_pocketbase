@@ -258,26 +258,17 @@ namespace Thomprog.Services
 
         //Realtime
 
-        
+        public void Subscribe(string tablename,string topic, Action<RealtimeEventArgs> callbackFun)        
+        {            
+             _PocketBase.Collection(tablename).Subscribe(topic, callbackFun); 
+        }
+
        
-        public async Task Realtime(string tablename)
-        {
-             Console.WriteLine("sub");
-            _PocketBase.Collection("posts").Subscribe("*", dothing); 
-           
-
-            
-        }
-
-        private Task dothing(SseMessage message)
-        {
-            Console.WriteLine("dothing");
-            return Task.CompletedTask;
-        }
 
         
       
-
+     
+       
        
 
 

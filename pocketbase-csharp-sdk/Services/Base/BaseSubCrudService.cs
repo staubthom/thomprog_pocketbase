@@ -1,6 +1,10 @@
 ﻿using FluentResults;
+using pocketbase_csharp_sdk.Services;
+using pocketbase_csharp_sdk.Services.Interfaces;
 using pocketbase_csharp_sdk.Models;
 using pocketbase_csharp_sdk.Models.Files;
+using System.Collections;
+using System.Net.Http;
 
 namespace pocketbase_csharp_sdk.Services.Base
 {
@@ -9,10 +13,18 @@ namespace pocketbase_csharp_sdk.Services.Base
         private readonly PocketBase _client;
         readonly string _collectionName;
 
+       
+
+      
+
+
         protected BaseSubCrudService(PocketBase client, string collectionName)
         {
+            //this._realtimeService = realtimeService;
             this._collectionName = collectionName;
             this._client = client;
+           
+
         }
 
         public virtual Result<PagedCollectionModel<T>> List<T>(int page = 1, int perPage = 30, string? filter = null, string? sort = null, CancellationToken cancellationToken = default)
@@ -166,51 +178,28 @@ namespace pocketbase_csharp_sdk.Services.Base
         /// <param name="sub">the topic to subscribe to</param>
         /// <param name="recordId">the id of the specific record or * for the whole collection</param>
         /// <param name="callback">callback, that is invoked every time something changes</param>
-        public async void Subscribe(string recordId, Func<SseMessage, Task> callback)
-        {
-            string subscribeTo = recordId != "*"
-                    ? $"{_collectionName}/{recordId}"
-                    : _collectionName;
+        //public async void Subscribe(string recordId, Func<SseMessage, Task> callback)
+        //{
+        //    string subscribeTo = recordId != "*"
+        //            ? $"{_collectionName}/{recordId}"
+        //            : _collectionName;
 
-            try
-            {
-                await _client.RealTime.SubscribeAsync(subscribeTo, callback);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// unsubscribe all listeners from the specified topic
-        /// </summary>
-        /// <param name="topic">the topic to unsubscribe from</param>
-        public Task UnsubscribeAsync(string? topic = null)
-        {
-            return _client.RealTime.UnsubscribeAsync(topic);
-        }
+        //    try
+        //    {
+        //        await _client.RealTime.SubscribeAsync(subscribeTo, callback);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary>
-        /// unsubscribe all listeners from the specified prefix
+        /// subscribe to the realtime events of the server
         /// </summary>
-        /// <param name="prefix">the prefix to unsubscribe from</param>
-        /// <returns></returns>
-        public Task UnsubscribeByPrefixAsync(string prefix)
-        {
-            return _client.RealTime.UnsubscribeByPrefixAsync(prefix);
-        }
-
-        /// <summary>
-        /// unsubscribe the specified listener from the specified topic
-        /// </summary>
-        /// <param name="topic">the topic to unsubscribe from</param>
-        /// <param name="listener">the listener to remove</param>
-        /// <returns></returns>
-        public Task UnsubscribeByTopicAndListenerAsync(string topic, Func<SseMessage, Task> listener)
-        {
-            return _client.RealTime.UnsubscribeByTopicAndListenerAsync(topic, listener);
-        }
+        /// <param name="topic">topic representing colection</param>
+        /// <param name="callbackFun">Action to be called when there is alterations in the given topic collection</param>
+        
 
 
         public async Task UploadFileAsync(string field, string fileName, Stream stream, CancellationToken cancellationToken = default)

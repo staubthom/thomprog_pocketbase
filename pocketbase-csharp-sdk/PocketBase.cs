@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using pocketbase_csharp_sdk.Services.Interfaces;
 using pocketbase_csharp_sdk.Errors;
 using pocketbase_csharp_sdk.Event;
 using pocketbase_csharp_sdk.Models;
@@ -27,7 +28,7 @@ namespace pocketbase_csharp_sdk
         public event AfterSendEventHandler? AfterSend;
         #endregion
 
-
+        public IRealtimeServiceBase RealtimeService { get; set; }
         public AuthStore AuthStore { private set; get; }
         public AdminService Admin { private set; get; }
         public UserService User { private set; get; }
@@ -35,11 +36,12 @@ namespace pocketbase_csharp_sdk
         public SettingsService Settings { private set; get; }
         public CollectionService Collections { private set; get; }
         //public RecordService Records { private set; get; }
-        public RealTimeService RealTime { private set; get; }
+        //public RealTimeService RealTime { private set; get; }
         public HealthService Health { private set; get; }
         public BackupService Backup { private set; get; }
 
         private readonly string _baseUrl;
+        private IRealtimeServiceBase _realtimeService;
         private readonly string _language;
         private readonly HttpClient _httpClient;
 
@@ -48,7 +50,7 @@ namespace pocketbase_csharp_sdk
             this._baseUrl = baseUrl;
             this._language = language;
             this._httpClient = httpClient ?? new HttpClient();
-
+            
             AuthStore = authStore ?? new AuthStore();
             Admin = new AdminService(this);
             User = new UserService(this);
@@ -56,9 +58,11 @@ namespace pocketbase_csharp_sdk
             Settings = new SettingsService(this);
             Collections = new CollectionService(this);
             //Records = new RecordService(this);
-            RealTime = new RealTimeService(this);
+            //RealTime = new RealTimeService(this);
             Health = new HealthService(this);
             Backup = new BackupService(this);
+           
+
         }
 
         public CollectionAuthService<T> AuthCollection<T>(string collectionName)
@@ -69,12 +73,16 @@ namespace pocketbase_csharp_sdk
 
         public RecordService Collection(string collectionName)
         {
+
+            
             if (recordServices.ContainsKey(collectionName))
             {
                 return recordServices[collectionName];
             }
-            var newService = new RecordService(this, collectionName);
+            this._realtimeService = new RealtimeService(this._httpClient, this._baseUrl);
+            var newService = new RecordService(this, collectionName, _realtimeService);
             recordServices[collectionName] = newService;
+           
             return newService;
         }
 

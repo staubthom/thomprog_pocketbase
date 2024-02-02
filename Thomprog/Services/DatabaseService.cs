@@ -317,11 +317,18 @@ namespace Thomprog.Services
         }
 
 
-         public  async Task Realtime(string tablename ) 
+        
+
+
+
+
+        public async Task Realtime(string tablename, string topic, Action<RealtimeEventArgs> callbackFun) 
         {
             await authRefresh();
-            await _client.Realtime(tablename);
+             _client.Subscribe(tablename,topic, callbackFun);
         }
+
+       
 
     }
 }
