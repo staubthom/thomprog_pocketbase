@@ -1,17 +1,281 @@
 ﻿@page "/chat"
+@page "/chat/{messageId}"
+
 @using pocketbase_csharp_sdk;
 @using System.Collections;
 @using pocketbase_csharp_sdk.Models;
 @using pocketbase_csharp_sdk.Models.Files;
+@using Thomprog.Models
+@using Thomprog.Services;
+@using Thomprog.Options;
 
-@attribute [StreamRendering(true)]
+
+<PageTitle>Index</PageTitle>
+<MudPaper Class="pa-4 ">
+    <ThomTitle Title=@L["Dashboard"] Description=@L["Send a Message"] />
+
+    <MudItem xs="12" sm="12">
+        <MudSplitter Color="Color.Primary" Dimension="30">
+
+            <StartContent>
+
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudPaper Elevation="25" Class="pa-3 ml-6" MinWidth="350px">
+                            <MudIcon Icon="@Icons.Material.Filled.Chat" Style="margin-right:10px"></MudIcon>
+                            <MudText Typo="Typo.h6">Conversations</MudText>
+
+                            <MudFab StartIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" Size="Size.Small"
+                                OnClick=" AddNewContact" />
+                            <MudFab StartIcon="@Icons.Material.Filled.GroupAdd" Color="Color.Primary" Size="Size.Small"
+                                OnClick=" AddNewGroup" />
+
+                            @if (_ChatConversations is null)
+                            {
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    <MudSkeleton />
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in _ChatConversations)
+                                {  
+                                    <MudStack>
+                                        <MudPaper Class="pa-1 ma-2" @onclick="() => GoToDetails(item)"
+                                            Style="@($"background-color:{item.color};")">
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                                @if (item.user1_id == myId)
+                                                {
+                                                    <MudAvatar Image="@($"{url}api/files/{item.expand.user2_id.collectionId}/{item.expand.user2_id.id}/{item.expand.user2_id.avatar}")"
+                                                               Size="Size.Large" Square="true" />
+                                                    <MudStack Justify="Justify.Center" Spacing="0">
+                                                        <MudText Typo="Typo.body1"> @item.expand.user2_id.email</MudText>
+                                                          
+                                                        </MudStack>
+
+                                                }
+                                                else
+                                                {
+                                                   
+                                                    <MudAvatar Image="@($"{url}api/files/{item.expand.user1_id.collectionId}/{item.expand.user1_id.id}/{item.expand.user1_id.avatar}")"
+                                                               Size="Size.Large" Square="true" />
+                                                            <MudStack Justify="Justify.Center" Spacing="0">
+                                                        <MudText Typo="Typo.body1"> @item.expand.user1_id.email</MudText>
+                                                           </MudStack>
+
+                                                }
+
+                                                <MudIconButton Icon="@Icons.Material.TwoTone.Edit" Variant="Variant.Filled"
+                                                    Class="ml-0 align-self-center" OnClick="() => Edit(item)" Size="Size.Medium"
+                                                    Color="Color.Secondary">
+                                                </MudIconButton>
+
+                                            </MudStack>
+                                        </MudPaper>
+
+                                    </MudStack>
+                                }
+                            }
+                        </MudPaper>
+
+                    </MudItem>
+
+                </MudGrid>
+            </StartContent>
+
+            <EndContent>
+                <MudPaper Elevation="25" Class="py-4 flex-grow-1">
+                   
+                        @if (string.IsNullOrEmpty(messageId))
+                        {
+                        <MudToolBar Dense="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Chat" Style="margin-right:10px"></MudIcon>
+                            <MudText Typo="Typo.h6">chat</MudText>
+                        </MudToolBar>
+                        }
+                        else
+                        {
+                        <MudToolBar Dense="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Chat" Style="margin-right:10px"></MudIcon>
+                            <MudText Typo="Typo.h6">chat</MudText>
+                        </MudToolBar>
+                   
+                    <div class="d-flex flex-column px-4" style="max-height:65vh;min-height:65vh; overflow:scroll;"
+                        id="chatContainer">  
+                          
+                                @foreach (var message in messages)
+                                {
+                                    <div class="d-flex flex-row my-4">
+                                        <div class="mr-4">
+                                            <MudAvatar Color="Color.Secondary" Style="height:50px; width:50px;">Avatar</MudAvatar>
+                                        </div>
+                                        <div>                                           
+                                            <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">
+                                            @message.Created
+                                            </MudText>
+                                            <MudText Typo="Typo.body2"
+                                                     Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">
+                                                @message.message_body
+                                            </MudText>
+                                        </div>
+                                    </div>
+                                }
+                                
+                           
+                            
+                    </div>
+                    <MudPaper Elevation="25" Class="d-flex flex-row px-2 mx-4" Style="">
+                        <MudTextField T="string" Placeholder="Enter your message..." DisableUnderLine="true"
+                            Class="mt-n2 mx-4" @bind-Value="CurrentMessage" For="@(()=> CurrentMessage)" />
+                            <MudButton StartIcon="@Icons.Material.Outlined.Send" Color="Color.Secondary" @onclick="() => Send()"
+                            ButtonType="ButtonType.Button">Send</MudButton>
+                    </MudPaper>
+                    }
+                </MudPaper>
+            </EndContent>
+        </MudSplitter>
+    </MudItem>
+
+
+
+    <MudGrid>
+
+        <MudItem xs="12" sm="6">
+
+
+        </MudItem>
+        <MudItem xs="12" sm="6">
+
+        </MudItem>
+
+    </MudGrid>
+
+
+
+
+
+</MudPaper>
+
+
+
+
 @code
 {
-  protected override async Task OnInitializedAsync()
+
+
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = null!;
+
+    public string CurrentMessage { get; set; }
+    public string CurrentUserId { get; set; }
+    public string CurrentUserEmail { get; set; }
+    [Parameter]
+    public string messageId { get; set; } = "";
+    public string ContactEmail { get; set; }
+    public string myId { get; set; }
+    private IEnumerable<ChatMessageModel> messages ;
+
+    //private IEnumerable<ChatConversation>? _ChatConversation;
+
+
+    public PocketBaseOptions pocketBaseOptions = new();
+    private string url;
+
+    private IEnumerable<ChatConversationModel>? _ChatConversations;
+    protected override async Task OnInitializedAsync()
     {
-        await DatabaseService.Realtime("posts", "*", dothing);      
-        
+
+        url = pocketBaseOptions.BaseUrl;
+        // get my Profile ID
+        var profiles_ienum = await DatabaseService.GetRecordByUserId<Profiles>("profiles",  await DatabaseService.GetUserId());
+        myId = profiles_ienum.FirstOrDefault().Id; //"tydggysqsylkcyq";//  ;   
+        await GetConversations();
+        // await DatabaseService.Realtime("posts", "*", dothing);
+
+        if(messageId != "")
+        {
+            await GetMessages();
+        }
+
+
     }
+    async Task Send()
+    {
+        if (string.IsNullOrEmpty(CurrentMessage))
+        {
+            return;
+        }
+        ChatMessageModel ChatMessage = new ChatMessageModel();
+        ChatMessage.message_body = CurrentMessage;
+        ChatMessage.sender_id = myId;
+        ChatMessage.chatconversation_id = messageId;
+        await DatabaseService.Insert<ChatMessageModel>("chatmessage", ChatMessage);
+        CurrentMessage = "";
+        await GetMessages();
+    }
+
+
+    async Task AddNewGroup()
+    {
+
+        // Make new forecast
+        ChatConversationModel NewChatConversation = new();
+        // Set Id to 0 so we know it is a new record
+        NewChatConversation.Id = "";
+        // Open the Popup
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                DisableBackdropClick = false
+            };
+        var parameters = new DialogParameters<CreateConversationDialog>();
+        parameters.Add(x => x.ChatConversation, NewChatConversation);
+        parameters.Add(x => x.url, url);
+        parameters.Add(x => x.myId, myId);
+        var dialog = await DialogService.ShowAsync<CreateConversationDialog>("Create new Group", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Conversation added.", Severity.Success);
+        }
+
+        NewChatConversation = null;
+        //await getEntrys();
+
+    }
+
+    async Task AddNewContact()
+    {
+
+        // Make new forecast
+        ChatConversationModel NewChatConversation = new();
+        // Set Id to 0 so we know it is a new record
+        NewChatConversation.Id = "";
+        // Open the Popup
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                DisableBackdropClick = false
+            };
+        var parameters = new DialogParameters<CreateConversationDialog>();
+        parameters.Add(x => x.ChatConversation, NewChatConversation);
+        parameters.Add(x => x.url, url);
+        parameters.Add(x => x.myId, myId);
+        var dialog = await DialogService.ShowAsync<CreateContactDialog>("Add new Contact", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Contact added.", Severity.Success);
+        }
+        await GetConversations();
+    }
+
 
     private void dothing(RealtimeEventArgs obj)
     {
@@ -35,10 +299,72 @@
             Console.WriteLine("delete");
             Console.WriteLine(obj.data.record.ToString());
         }
-    
+
     }
 
- 
+    private async Task GoToDetails(ChatConversationModel item)
+    {
+
+        var path = $"/chat/{item.Id}";
+        messageId = item.Id;
+        NavigationManager.NavigateTo(path);
+         await GetMessages();
+        
+    }
+
+    private void Edit(ChatConversationModel item)
+    {
+
+    }
+    private async Task GetMessages()
+    {
+        var filter = $"chatconversation_id='{messageId}'";
+        Console.WriteLine(filter);
+        messages = await DatabaseService.GetCollection<ChatMessageModel>("chatmessage", filter: filter);
+        var s0 = ObjectDumper.Dump(messages, new DumpOptions() { MaxLevel = 2 });
+        Console.WriteLine(s0);
+        StateHasChanged();
+        
+    }
+    private async Task GetConversations()
+    {
+          
+        var filter =$"(user1_id='{myId}')||(user2_id='{myId}')";
+        var expand =$"user1_id,user2_id";      
+        _ChatConversations = await DatabaseService.GetCollection<ChatConversationModel>("chatconversations",filter:filter, expand:expand);
+
+        /*var s0 = ObjectDumper.Dump(_ChatConversations, new DumpOptions() { MaxLevel = 2 });
+        Console.WriteLine(s0);
+
+        foreach (var entry in  _ChatConversations )
+        {
        
+             //Console.WriteLine(entry);
+            var s1 = ObjectDumper.Dump(entry.expand.user1_id, new DumpOptions() { MaxLevel = 2 });
+            Console.WriteLine(s1);
+             Console.WriteLine(entry.expand);
+             
+               
+
+       
+
+        }
+        */
+       
+        
+
+        /*var records = await DatabaseService.GetCollection<ChatConversationModel>("chatmessage");
+        Console.WriteLine(records.FirstOrDefault());
+        var records1 = await DatabaseService.GetCollection<ChatConversationModel>("chatmessagerecipient");
+        Console.WriteLine(records1.FirstOrDefault()); */
+        //_ChatConversation = await DatabaseService.GetCollection<ChatConversation>("chatconversation");
+
+
+        StateHasChanged();
+    }
+
+    private void OnValueChangedSearch(string text)
+    {
+        // ChatConversationListFiltered = ChatConversationList?.Where(row => row.email.Contains(text)).ToList();
+    }
 }
- 

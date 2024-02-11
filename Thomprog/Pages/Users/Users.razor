@@ -1,6 +1,6 @@
 ﻿@page "/users"
 @attribute [Authorize]
-
+@using Thomprog.Options
 @using Thomprog.Models
 @using Thomprog.Services;
 
@@ -13,70 +13,79 @@
 <MudPaper Class="pa-4 ">
     @if (RightsService.canManageUsers)
     {
-    <ThomTitle Title=@L["Users"] Description=@L["Manage Users"] />
+        <ThomTitle Title=@L["Users"] Description=@L["Manage Users"] />
 
 
 
-    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.TwoTone.Add" Color="Color.Primary"
-        @onclick="CreateDialog">@L["Add User"]</MudButton>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.TwoTone.Add" Color="Color.Primary"
+            @onclick="CreateDialog">@L["Add User"]</MudButton>
 
 
-    <MudTable Items="@profilesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
-        SortLabel="Sort By" T="Profiles">
-        <ToolBarContent>
-            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.TwoTone.Search"
-                IconSize="Size.Medium" Class="mt-0" Clearable="true" ValueChanged="@(s=>OnValueChangedSearch(s))"
-                Placeholder=@L["Search"] />
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
-                    @L["Username"]
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.user_id)">
-                    User_id
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                @L["Profile"]
-            </MudTh>
+        <MudTable Items="@profilesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
+            SortLabel="Sort By" T="Profiles">
+            <ToolBarContent>
+                <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.TwoTone.Search"
+                    IconSize="Size.Medium" Class="mt-0" Clearable="true" ValueChanged="@(s=>OnValueChangedSearch(s))"
+                    Placeholder=@L["Search"] />
+            </ToolBarContent>
+            <HeaderContent>
+                 <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
+                        @L["Avatar"]
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
+                        @L["Username"]
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.user_id)">
+                        User_id
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    @L["Profile"]
+                </MudTh>
 
-            <MudTh> @L["Permissions"] </MudTh>
+                <MudTh> @L["Permissions"] </MudTh>
 
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Title">@context?.email</MudTd>
-            <MudTd DataLabel="User_id">@context?.user_id</MudTd>
-            <MudTd DataLabel="Profile">
-                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Edit"
-                    @onclick="@(()=>_nav.NavigateTo($"/account/{context?.user_id}"))" />
-            </MudTd>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Avatar"><MudAvatar Image="@($"{url}api/files/{context?.CollectionId}/{context?.Id}/{context?.avatar}")" Size="Size.Large" Square="true" /></MudTd>
+                      
+                <MudTd DataLabel="Title">@context?.email</MudTd>
+                <MudTd DataLabel="User_id">@context?.user_id</MudTd>
+                <MudTd DataLabel="Profile">
+                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Edit"
+                        @onclick="@(()=>_nav.NavigateTo($"/account/{context?.user_id}"))" />
+                </MudTd>
 
-            <MudTd DataLabel=@L["Permissions"]>
-                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.EmojiPeople"
-                    @onclick="@(()=>_nav.NavigateTo($"/rights/{context?.user_id}"))" />
-            </MudTd>
+                <MudTd DataLabel=@L["Permissions"]>
+                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.EmojiPeople"
+                        @onclick="@(()=>_nav.NavigateTo($"/rights/{context?.user_id}"))" />
+                </MudTd>
 
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new int[]{50, 100}" />
-        </PagerContent>
-    </MudTable>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+            </PagerContent>
+        </MudTable>
     }
     else
     {
-       
-         <ThomTitle Title=@L["Users"] Description=@L["You do not have this Permission"] />
-         
+
+        <ThomTitle Title=@L["Users"] Description=@L["You do not have this Permission"] />
+
     }
 
 
 </MudPaper>
 @code {
-
+    private string url;
     protected Profiles Model = new();
+  public PocketBase PocketBase { get; set; } = null!;
+   public PocketBaseOptions pocketBaseOptions = new();
 
     async Task CreateDialog()
     {
@@ -94,11 +103,13 @@
     {
 
         await GetTable();
+        url = pocketBaseOptions.BaseUrl;
     }
 
     private IReadOnlyList<Profiles>? profilesList { get; set; }
     private IReadOnlyList<Profiles>? profilesListFiltered { get; set; }
     private MudTable<Profiles>? _table;
+
     protected async Task GetTable()
     {
 

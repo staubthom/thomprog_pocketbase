@@ -7,6 +7,7 @@ using System.Collections;
 using pocketbase_csharp_sdk.Models;
 using pocketbase_csharp_sdk.Models.Files;
 using pocketbase_csharp_sdk.Sse;
+using ITVisions;
 
 namespace Thomprog.Services
 {
@@ -83,13 +84,13 @@ namespace Thomprog.Services
 
         //----------------------------CRUD-------------------------------------------------------------------------------
 
-        public async Task<IEnumerable<T>> GetCollection<T>(string tablename, string? filter = null) where T : BaseModel, new()
+        public async Task<IEnumerable<T>> GetCollection<T>(string tablename, string? filter = null, string? expand = null) where T : BaseModel, new()
         {
 
-            var currentUserResult = await _PocketBase.Collection(tablename).GetFullListAsync<T>(filter: filter);
+            var currentUserResult = await _PocketBase.Collection(tablename).GetFullListAsync<T>(filter: filter, expand: expand);
             if (currentUserResult.IsSuccess)
             {
-
+               
                 return (IEnumerable<T>)currentUserResult.Value;
             }
             else

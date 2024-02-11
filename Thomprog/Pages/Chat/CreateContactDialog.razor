@@ -1,0 +1,142 @@
+﻿@using Thomprog.Models;
+@using Thomprog.Components.Dialog;
+@using Thomprog.Shared.Helper;
+@using Thomprog.Options
+@inject IDialogService DialogService
+<MudDialog>
+
+    <DialogContent>
+      
+        <MudTable Items="@profilesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
+            SortLabel="Sort By" T="Profiles">
+            <ToolBarContent>
+                <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.TwoTone.Search"
+                    IconSize="Size.Medium" Class="mt-0" Clearable="true" ValueChanged="@(s=>OnValueChangedSearch(s))"
+                    Placeholder=@L["Search"] />
+            </ToolBarContent>
+            <HeaderContent>
+                 <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
+                        @L["Avatar"]
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Profiles, object>(x=>x.email)">
+                        @L["Username"]
+                    </MudTableSortLabel>
+                </MudTh>
+                 <MudTh>                    
+                    @L["Add"]                   
+                </MudTh>
+               
+
+
+
+            </HeaderContent>
+            <RowTemplate>
+                @if(context?.Id != myId )
+                {
+                  <MudTd DataLabel="Avatar"><MudAvatar Image="@($"{base_url}api/files/{context?.CollectionId}/{context?.Id}/{context?.avatar}")" Size="Size.Large" Square="true" /></MudTd>
+                <MudTd DataLabel="Username">@context?.email</MudTd>
+                <MudTd DataLabel="Profile">
+                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.TwoTone.Add"
+                        @onclick="() => Save(context?.Id)" />
+                </MudTd>
+
+                }
+
+
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+            </PagerContent>
+        </MudTable>
+
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+  public PocketBase PocketBase { get; set; } = null!;
+   public PocketBaseOptions pocketBaseOptions = new();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+
+    [Parameter] public ChatConversationModel ChatConversation { get; set; }
+    [Parameter] public string url { get; set; }
+    [Parameter] public string myId { get; set; }
+    private string base_url;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetProfiles();
+        base_url = pocketBaseOptions.BaseUrl;
+    }
+
+    // ---------------- DELETE
+    private async Task Delete(ChatConversationModel item)
+    {
+        await DatabaseService.Delete<ChatConversationModel>("chatconversation", item);
+        MudDialog.Close(DialogResult.Ok(true));
+
+    }
+
+    // ---------------- CREATE NEW ---------------------
+
+    private async Task Save(string item)
+    {
+        
+        ChatMessageModel ChatMessage = new ChatMessageModel();
+        /* ChatConversationModel ChatConversation = new  ChatConversationModel(); 
+        await DatabaseService.Insert<ChatMessageModel>("chatmessage", ChatMessage);
+        ChatConversation.message_id = ChatMessage.Id; */
+        // get my Profile ID
+        var profiles_ienum = await DatabaseService.GetRecordByUserId<Profiles>("profiles",  await DatabaseService.GetUserId());  
+        ChatConversation.user1_id = profiles_ienum.FirstOrDefault().Id; //"tydggysqsylkcyq";//  ;
+       
+        ChatConversation.user2_id = item;
+        
+        await DatabaseService.Insert<ChatConversationModel>("chatconversations", ChatConversation);
+
+
+
+/*
+        if (item.name != "")
+        {
+            if (item.Id == "")
+            {
+                await DatabaseService.Insert<ChatConversationModel>("chatconversation", item);
+            }
+            else
+            {
+                await DatabaseService.Update<ChatConversationModel>("chatconversation", item);
+            }
+        } */
+
+        MudDialog.Close(DialogResult.Ok(true));
+
+    }
+
+    private IReadOnlyList<Profiles>? profilesList { get; set; }
+    private IReadOnlyList<Profiles>? profilesListFiltered { get; set; }
+    private MudTable<Profiles>? _table;
+
+    protected async Task GetProfiles()
+    {
+
+        var profiles_ienum = await DatabaseService.GetCollection<Profiles>("profiles");
+        IReadOnlyList<Profiles> profiles = profiles_ienum.ToList();
+        profilesList = profiles;
+        profilesListFiltered = profiles;
+        StateHasChanged();
+    }
+
+    private void OnValueChangedSearch(string text)
+    {
+        profilesListFiltered = profilesList?.Where(row => row.email.Contains(text)).ToList();
+    }
+
+
+
+}

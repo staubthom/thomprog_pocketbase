@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="6.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
@@ -55,12 +56,15 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <ItemGroup>   
+  <ItemGroup>
    
     <ProjectReference Include="..\pocketbase-csharp-sdk\pocketbase-csharp-sdk.csproj" />
   </ItemGroup>
 
- 
+	<ItemGroup>
+
+		<ProjectReference Include="..\ObjectDumper\ObjectDumper.csproj" />
+	</ItemGroup>
 
   <ItemGroup>
     <Content Update="wwwroot\appsettings.json">

@@ -7,4 +7,4 @@
         public IEnumerable<AuthMethodProvider>? AuthProviders { get; set; }
     }
 }
- Path: pocketbase-csharp-sdk/Models/Log/LogInResponse.cs
+

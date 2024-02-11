@@ -127,7 +127,10 @@
     {
         _loading = true;
 
+
+        
         todos = await DatabaseService.GetCollection<TodoModel>("todos");
+             Console.WriteLine(todos.FirstOrDefault());
 
         /*
         if (!string.IsNullOrEmpty(todos.avatar))

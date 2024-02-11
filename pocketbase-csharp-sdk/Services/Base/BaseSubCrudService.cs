@@ -27,12 +27,13 @@ namespace pocketbase_csharp_sdk.Services.Base
 
         }
 
-        public virtual Result<PagedCollectionModel<T>> List<T>(int page = 1, int perPage = 30, string? filter = null, string? sort = null, CancellationToken cancellationToken = default)
+        public virtual Result<PagedCollectionModel<T>> List<T>(int page = 1, int perPage = 30, string? filter = null,  string? expand = null, string? sort = null, CancellationToken cancellationToken = default)
         {
             var path = BasePath(_collectionName);
             var query = new Dictionary<string, object?>()
             {
                 { "filter", filter },
+                { "expand", expand },
                 { "page", page },
                 { "perPage", perPage },
                 { "sort", sort }
@@ -41,12 +42,13 @@ namespace pocketbase_csharp_sdk.Services.Base
             return _client.Send<PagedCollectionModel<T>>(path, HttpMethod.Get, query: query, cancellationToken: cancellationToken);
         }
 
-        public virtual Task<Result<PagedCollectionModel<T>>> ListAsync<T>(int page = 1, int perPage = 30, string? filter = null, string? sort = null, CancellationToken cancellationToken = default)
+        public virtual Task<Result<PagedCollectionModel<T>>> ListAsync<T>(int page = 1, int perPage = 30, string? filter = null, string? expand = null, string? sort = null, CancellationToken cancellationToken = default)
         {
             var path = BasePath(_collectionName);
             var query = new Dictionary<string, object?>()
             {
                 { "filter", filter },
+                { "expand", expand },
                 { "page", page },
                 { "perPage", perPage },
                 { "sort", sort }
@@ -54,14 +56,14 @@ namespace pocketbase_csharp_sdk.Services.Base
             return _client.SendAsync<PagedCollectionModel<T>>(path, HttpMethod.Get, query: query, cancellationToken: cancellationToken); ;
         }
 
-        public virtual Result<IEnumerable<T>> GetFullList<T>(int batch = 100, string? filter = null, string? sort = null, CancellationToken cancellationToken = default)
+        public virtual Result<IEnumerable<T>> GetFullList<T>(int batch = 100, string? filter = null, string? sort = null, string? expand = null, CancellationToken cancellationToken = default)
         {
             List<T> result = new();
             int currentPage = 1;
             Result<PagedCollectionModel<T>> lastResponse;
             do
             {
-                lastResponse = List<T>(page: currentPage, perPage: batch, filter: filter, sort: sort, cancellationToken: cancellationToken);
+                lastResponse = List<T>(page: currentPage, perPage: batch, filter: filter,expand: expand, sort: sort, cancellationToken: cancellationToken);
                 if (lastResponse.IsSuccess && lastResponse.Value.Items is not null)
                 {
                     result.AddRange(lastResponse.Value.Items);
@@ -72,14 +74,14 @@ namespace pocketbase_csharp_sdk.Services.Base
             return result;
         }
 
-        public virtual async Task<Result<IEnumerable<T>>> GetFullListAsync<T>(int batch = 100, string? filter = null, string? sort = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Result<IEnumerable<T>>> GetFullListAsync<T>(int batch = 100, string? filter = null, string? expand = null, string? sort = null, CancellationToken cancellationToken = default)
         {
             List<T> result = new();
             int currentPage = 1;
             Result<PagedCollectionModel<T>> lastResponse;
             do
             {
-                lastResponse = await ListAsync<T>(page: currentPage, perPage: batch, filter: filter, sort: sort, cancellationToken: cancellationToken);
+                lastResponse = await ListAsync<T>(page: currentPage, perPage: batch, filter: filter, expand: expand, sort: sort, cancellationToken: cancellationToken);
                 if (lastResponse.IsSuccess && lastResponse.Value.Items is not null)
                 {
                     result.AddRange(lastResponse.Value.Items);

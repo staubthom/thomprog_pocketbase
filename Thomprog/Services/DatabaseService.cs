@@ -242,10 +242,10 @@ namespace Thomprog.Services
 
         //--------------------------CRUD--------------------------------------------------
 
-        public async Task<IEnumerable<T>> GetCollection<T>(string tablename, string? filter = null) where T : BaseModel, new()
+        public async Task<IEnumerable<T>> GetCollection<T>(string tablename, string? filter = null, string? expand = null) where T : BaseModel, new()
         {
 
-            var modeledResponse = await _client.GetCollection<T>(tablename, filter: filter);
+            var modeledResponse = await _client.GetCollection<T>(tablename, filter : filter, expand : expand);
             return modeledResponse;
         }
 

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 using pocketbase_csharp_sdk;
+using MudExtensions.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -59,6 +60,7 @@ builder.Services.AddScoped<PreferenceService>();
 builder.Services.AddScoped<RightsService>();
 
 
+builder.Services.AddMudExtensions();
 
 
 var host = builder.Build();

@@ -91,6 +91,7 @@
     private async Task Delete(TodoModel item)
     {
         await DatabaseService.Delete<TodoModel>("todos", item);
+               MudDialog.Close(DialogResult.Ok(true));
 
     }
 
