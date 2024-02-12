@@ -12,13 +12,11 @@
 
 <PageTitle>Index</PageTitle>
 <MudPaper Class="pa-4 ">
-    <ThomTitle Title=@L["Dashboard"] Description=@L["Send a Message"] />
+    <ThomTitle Title=@L["Dashboard"] Description=@L["Send a Message only for Demo of Realtimedatabase and Expand property"] />
 
     <MudItem xs="12" sm="12">
         <MudSplitter Color="Color.Primary" Dimension="30">
-
             <StartContent>
-
                 <MudGrid>
                     <MudItem xs="12">
                         <MudPaper Elevation="25" Class="pa-3 ml-6" MinWidth="350px">
@@ -28,7 +26,7 @@
                             <MudFab StartIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" Size="Size.Small"
                                 OnClick=" AddNewContact" />
                             <MudFab StartIcon="@Icons.Material.Filled.GroupAdd" Color="Color.Primary" Size="Size.Small"
-                                OnClick=" AddNewGroup" />
+                                OnClick=" AddNewGroup" Disabled />
 
                             @if (_ChatConversations is null)
                             {
@@ -50,7 +48,8 @@
                                                     <MudAvatar Image="@($"{url}api/files/{item.expand.user2_id.collectionId}/{item.expand.user2_id.id}/{item.expand.user2_id.avatar}")"
                                                                Size="Size.Large" Square="true" />
                                                     <MudStack Justify="Justify.Center" Spacing="0">
-                                                        <MudText Typo="Typo.body1"> @item.expand.user2_id.email</MudText>
+                                                        <MudText Typo="Typo.body1"> @item.description</MudText>
+                                                        <MudText Typo="Typo.body2"> @item.expand.user2_id.email</MudText>
                                                           
                                                         </MudStack>
 
@@ -61,13 +60,14 @@
                                                     <MudAvatar Image="@($"{url}api/files/{item.expand.user1_id.collectionId}/{item.expand.user1_id.id}/{item.expand.user1_id.avatar}")"
                                                                Size="Size.Large" Square="true" />
                                                             <MudStack Justify="Justify.Center" Spacing="0">
-                                                        <MudText Typo="Typo.body1"> @item.expand.user1_id.email</MudText>
+                                                        <MudText Typo="Typo.body1"> @item.description</MudText>
+                                                        <MudText Typo="Typo.body2"> @item.expand.user1_id.email</MudText>
                                                            </MudStack>
 
                                                 }
 
-                                                <MudIconButton Icon="@Icons.Material.TwoTone.Edit" Variant="Variant.Filled"
-                                                    Class="ml-0 align-self-center" OnClick="() => Edit(item)" Size="Size.Medium"
+                                                <MudIconButton Icon="@Icons.Material.TwoTone.Delete" Variant="Variant.Filled"
+                                                    Class="ml-0 align-self-center" OnClick="() => Delete(item)" Size="Size.Medium"
                                                     Color="Color.Secondary">
                                                 </MudIconButton>
 
@@ -100,29 +100,56 @@
                             <MudIcon Icon="@Icons.Material.Filled.Chat" Style="margin-right:10px"></MudIcon>
                             <MudText Typo="Typo.h6">chat</MudText>
                         </MudToolBar>
-                   
-                    <div class="d-flex flex-column px-4" style="max-height:65vh;min-height:65vh; overflow:scroll;"
-                        id="chatContainer">  
-                          
+
+                        <div class="d-flex flex-column px-4" style="max-height:65vh;min-height:65vh; overflow:scroll;"
+                        id="chatContainer">
+                            @if (messages != null)
+                            {
                                 @foreach (var message in messages)
                                 {
-                                    <div class="d-flex flex-row my-4">
-                                        <div class="mr-4">
-                                            <MudAvatar Color="Color.Secondary" Style="height:50px; width:50px;">Avatar</MudAvatar>
+                                    @if (message.sender_id == myId)
+                                    {
+                                        <div class="d-flex flex-row-reverse my-4">
+
+                                            <div class="ml-4">
+                                                <MudAvatar Image="@($"{url}api/files/{message.expand.sender_id.collectionId}/{message.expand.sender_id.id}/{message.expand.sender_id.avatar}")"
+                                                Size="Size.Large" />
+                                            </div>
+                                            <div>
+                                                <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">
+                                                    @message.Created
+                                                </MudText>
+                                                <MudText Typo="Typo.body2"
+                                                Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">
+                                                    @message.message_body
+                                                </MudText>
+                                            </div>
+
                                         </div>
-                                        <div>                                           
-                                            <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">
-                                            @message.Created
-                                            </MudText>
-                                            <MudText Typo="Typo.body2"
-                                                     Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">
-                                                @message.message_body
-                                            </MudText>
+                                    }
+                                    else
+                                    {
+
+                                        <div class="d-flex flex-row my-4">
+                                            <div class="mr-4">
+                                                <MudAvatar Image="@($"{url}api/files/{message.expand.sender_id.collectionId}/{message.expand.sender_id.id}/{message.expand.sender_id.avatar}")"
+                                                Size="Size.Large" />
+                                            </div>
+                                            <div>
+                                                <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">
+                                                    @message.Created
+                                                </MudText>
+                                                <MudText Typo="Typo.body2"
+                                                Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">
+                                                    @message.message_body
+                                                </MudText>
+                                            </div>
                                         </div>
-                                    </div>
+
+                                    }
+
                                 }
-                                
-                           
+                            }                   
                             
                     </div>
                     <MudPaper Elevation="25" Class="d-flex flex-row px-2 mx-4" Style="">
@@ -138,23 +165,6 @@
     </MudItem>
 
 
-
-    <MudGrid>
-
-        <MudItem xs="12" sm="6">
-
-
-        </MudItem>
-        <MudItem xs="12" sm="6">
-
-        </MudItem>
-
-    </MudGrid>
-
-
-
-
-
 </MudPaper>
 
 
@@ -162,9 +172,6 @@
 
 @code
 {
-
-
-
     [Inject]
     public NavigationManager NavigationManager { get; set; } = null!;
 
@@ -177,30 +184,32 @@
     public string myId { get; set; }
     private IEnumerable<ChatMessageModel> messages ;
 
-    //private IEnumerable<ChatConversation>? _ChatConversation;
-
-
     public PocketBaseOptions pocketBaseOptions = new();
     private string url;
 
     private IEnumerable<ChatConversationModel>? _ChatConversations;
     protected override async Task OnInitializedAsync()
     {
-
         url = pocketBaseOptions.BaseUrl;
+       
+
+
         // get my Profile ID
         var profiles_ienum = await DatabaseService.GetRecordByUserId<Profiles>("profiles",  await DatabaseService.GetUserId());
-        myId = profiles_ienum.FirstOrDefault().Id; //"tydggysqsylkcyq";//  ;   
-        await GetConversations();
-        // await DatabaseService.Realtime("posts", "*", dothing);
+        myId = profiles_ienum.FirstOrDefault().Id;  
+        await GetConversations();        
 
         if(messageId != "")
         {
             await GetMessages();
         }
-
+        //Connect to Realtime Database
+        Console.WriteLine("Subscribe to Realtime");
+        await DatabaseService.Realtime("chatmessage", "*", chatmessage);
+        await DatabaseService.Realtime("chatconversations", "*", chatconversation);
 
     }
+    
     async Task Send()
     {
         if (string.IsNullOrEmpty(CurrentMessage))
@@ -220,7 +229,6 @@
     async Task AddNewGroup()
     {
 
-        // Make new forecast
         ChatConversationModel NewChatConversation = new();
         // Set Id to 0 so we know it is a new record
         NewChatConversation.Id = "";
@@ -277,25 +285,58 @@
     }
 
 
-    private void dothing(RealtimeEventArgs obj)
+    private void chatmessage(RealtimeEventArgs obj)
     {
-        Console.WriteLine("Juhu1");
-        Console.WriteLine(obj.data);
-        Console.WriteLine(obj.data.record);
-        Console.WriteLine(obj.ToString());
-        //Console.WriteLine(obj.data.action);
+
+        //Aufruf mit:
+        // await DatabaseService.Realtime("posts", "*", dothing);
+
+        Console.WriteLine("cb_chatmessage");
+        GetMessages();      
+                    
         if (obj.data.action == "create")
         {
+
             Console.WriteLine("create");
             Console.WriteLine(obj.data.record.ToString());
         }
         if (obj.data.action == "update")
         {
+
             Console.WriteLine("update");
             Console.WriteLine(obj.data.record.ToString());
         }
         if (obj.data.action == "delete")
         {
+
+            Console.WriteLine("delete");
+            Console.WriteLine(obj.data.record.ToString());
+        }
+
+    }
+
+    private void chatconversation(RealtimeEventArgs obj)
+    {
+        //Aufruf mit:
+        // await DatabaseService.Realtime("posts", "*", dothing);
+        //Console.WriteLine(obj.data.action);
+        Console.WriteLine("cb_chatconversation");
+        GetConversations();
+        if (obj.data.action == "create")
+        {
+
+            Console.WriteLine("create");
+            Console.WriteLine(obj.data.record.ToString());
+        }
+        if (obj.data.action == "update")
+        {
+
+            Console.WriteLine("update");
+            Console.WriteLine(obj.data.record.ToString());
+        }
+        if (obj.data.action == "delete")
+        {
+
             Console.WriteLine("delete");
             Console.WriteLine(obj.data.record.ToString());
         }
@@ -308,21 +349,44 @@
         var path = $"/chat/{item.Id}";
         messageId = item.Id;
         NavigationManager.NavigateTo(path);
-         await GetMessages();
-        
+        await GetMessages();
+
     }
 
     private void Edit(ChatConversationModel item)
     {
+        //Not implemented yet
+    }
+    private async Task Delete(ChatConversationModel item)
+    {
+        string state = "";
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            "Deleting can not be undone!",
+            yesText: "Delete!", cancelText: "Cancel");
+
+        state = result == null ? "Canceled" : "Deleted!";
+
+        if (state == "Canceled")
+        {
+            return;
+        }
+        else
+        {
+            await DatabaseService.Delete<ChatConversationModel>("chatconversations", item);
+            await GetConversations();
+            var path = $"/chat";
+            NavigationManager.NavigateTo(path);
+        }
 
     }
     private async Task GetMessages()
     {
-        var filter = $"chatconversation_id='{messageId}'";
-        Console.WriteLine(filter);
-        messages = await DatabaseService.GetCollection<ChatMessageModel>("chatmessage", filter: filter);
-        var s0 = ObjectDumper.Dump(messages, new DumpOptions() { MaxLevel = 2 });
-        Console.WriteLine(s0);
+        var filter = $"chatconversation_id='{messageId}'";        
+        var expand = $"sender_id";
+        messages = await DatabaseService.GetCollection<ChatMessageModel>("chatmessage", filter: filter, expand: expand);
+        //var s0 = ObjectDumper.Dump(messages, new DumpOptions() { MaxLevel = 2 });
+        //Console.WriteLine(s0);
         StateHasChanged();
         
     }
@@ -333,38 +397,8 @@
         var expand =$"user1_id,user2_id";      
         _ChatConversations = await DatabaseService.GetCollection<ChatConversationModel>("chatconversations",filter:filter, expand:expand);
 
-        /*var s0 = ObjectDumper.Dump(_ChatConversations, new DumpOptions() { MaxLevel = 2 });
-        Console.WriteLine(s0);
-
-        foreach (var entry in  _ChatConversations )
-        {
-       
-             //Console.WriteLine(entry);
-            var s1 = ObjectDumper.Dump(entry.expand.user1_id, new DumpOptions() { MaxLevel = 2 });
-            Console.WriteLine(s1);
-             Console.WriteLine(entry.expand);
-             
-               
-
-       
-
-        }
-        */
-       
-        
-
-        /*var records = await DatabaseService.GetCollection<ChatConversationModel>("chatmessage");
-        Console.WriteLine(records.FirstOrDefault());
-        var records1 = await DatabaseService.GetCollection<ChatConversationModel>("chatmessagerecipient");
-        Console.WriteLine(records1.FirstOrDefault()); */
-        //_ChatConversation = await DatabaseService.GetCollection<ChatConversation>("chatconversation");
-
-
         StateHasChanged();
     }
 
-    private void OnValueChangedSearch(string text)
-    {
-        // ChatConversationListFiltered = ChatConversationList?.Where(row => row.email.Contains(text)).ToList();
-    }
+   
 }

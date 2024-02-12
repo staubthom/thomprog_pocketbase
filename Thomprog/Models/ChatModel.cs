@@ -53,19 +53,6 @@ namespace Thomprog.Models
         public UserId user2_id { get; set; }
     }
     
-    public class  ChatMessageRecipient : BaseModel
-    {
-           
-
-        public string? recipient_id { get; set; }
-        public string? recipient_group_id { get; set; }
-        public bool is_read { get; set; }
-        public string? message_id { get; set; }
-        
-       
-    }
-
-    
 
      public class ChatMessageModel : BaseModel
     {
@@ -78,7 +65,12 @@ namespace Thomprog.Models
         public string? next_reminder_date { get; set; }  
         public int? reminder_frequency_id { get; set; }
         public string? chatconversation_id { get; set; }
+        public Expand1 expand { get; set; }
 
     }
-    
+    public class Expand1
+    {
+        public UserId sender_id { get; set; }
+        
+    }
 }

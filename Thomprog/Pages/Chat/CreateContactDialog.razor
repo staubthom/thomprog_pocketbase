@@ -6,7 +6,10 @@
 <MudDialog>
 
     <DialogContent>
-      
+        <MudTextField Label="Description" HelperText=""
+                      @bind-Value="description" />
+       
+        <br />
         <MudTable Items="@profilesListFiltered" @ref="_table" Elevation="1" Bordered="false" Striped="true" Hover="true"
             SortLabel="Sort By" T="Profiles">
             <ToolBarContent>
@@ -58,8 +61,8 @@
 @code {
 
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-  public PocketBase PocketBase { get; set; } = null!;
-   public PocketBaseOptions pocketBaseOptions = new();
+    public PocketBase PocketBase { get; set; } = null!;
+    public PocketBaseOptions pocketBaseOptions = new();
 
     void Submit() => MudDialog.Close(DialogResult.Ok(true));
     void Cancel() => MudDialog.Cancel();
@@ -68,6 +71,8 @@
     [Parameter] public string url { get; set; }
     [Parameter] public string myId { get; set; }
     private string base_url;
+    private string description;
+
     protected override async Task OnInitializedAsync()
     {
         await GetProfiles();
@@ -87,32 +92,16 @@
     private async Task Save(string item)
     {
         
-        ChatMessageModel ChatMessage = new ChatMessageModel();
-        /* ChatConversationModel ChatConversation = new  ChatConversationModel(); 
-        await DatabaseService.Insert<ChatMessageModel>("chatmessage", ChatMessage);
-        ChatConversation.message_id = ChatMessage.Id; */
-        // get my Profile ID
+        ChatMessageModel ChatMessage = new ChatMessageModel();       
         var profiles_ienum = await DatabaseService.GetRecordByUserId<Profiles>("profiles",  await DatabaseService.GetUserId());  
         ChatConversation.user1_id = profiles_ienum.FirstOrDefault().Id; //"tydggysqsylkcyq";//  ;
-       
+        ChatConversation.description= description;
         ChatConversation.user2_id = item;
         
         await DatabaseService.Insert<ChatConversationModel>("chatconversations", ChatConversation);
 
 
 
-/*
-        if (item.name != "")
-        {
-            if (item.Id == "")
-            {
-                await DatabaseService.Insert<ChatConversationModel>("chatconversation", item);
-            }
-            else
-            {
-                await DatabaseService.Update<ChatConversationModel>("chatconversation", item);
-            }
-        } */
 
         MudDialog.Close(DialogResult.Ok(true));
 

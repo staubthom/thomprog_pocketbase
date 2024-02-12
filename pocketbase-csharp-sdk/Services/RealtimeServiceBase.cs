@@ -10,6 +10,9 @@ using pocketbase_csharp_sdk.Models;
 using System.Text.Json;
 using pocketbase_csharp_sdk.Services.Interfaces;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using System.Threading;
+using System.Net.Http.Headers;
+using System.Net;
 
 
 namespace pocketbase_csharp_sdk.Services;
@@ -100,7 +103,8 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     /// <returns></returns>
     public async void AddRemoveTopics()
     {
-
+        
+        
         await _httpcleint.PostAsJsonAsync(baseUrl + "api/realtime", new
         {
             clientId = _cleintId,
@@ -121,18 +125,26 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
             {
                 try
                 {
+                   //q how to add authorization header to the request?
+                   //a you can add the authorization header to the request by adding the below code
+                   //request.Headers.Add
+
+
+
+
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "stream")
                     {
-                        RequestUri = new Uri(baseUrl + "api/realtime"),                
+                        RequestUri = new Uri(baseUrl + "api/realtime"),                         
                      
                     };
-                    request.SetBrowserResponseStreamingEnabled(true);
-                    
+                    // with the new feature of IAsyncEnumerable in .net 6 we can use the below code to read the stream
                     //https://www.tpeczek.com/2021/12/aspnet-core-6-and-iasyncenumerable.html
+                    //otherwise it is waiting a long time to get the response
+                    request.SetBrowserResponseStreamingEnabled(true);
 
 
-
-                    await ReadSSEStream(request);
+                   
+                       await ReadSSEStream(request);
                 }
                 catch (Exception ex)
                 {
@@ -157,8 +169,9 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     {
 
         using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _cleintId);
 
-        
+
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
        
         
