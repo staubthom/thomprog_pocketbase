@@ -51,10 +51,17 @@ Then you will see the following:
 ![Thomprog](/doc/thomprog.jpg "Thomprog")
 
 - Now you can start to create your ToDo's.
-- Record a Voice Message and save it. 
+![ToDo](/doc/todo.jpg "ToDo")
+- Test a Write a Message. 
+![Chat](/doc/chat.jpg "Chat")
+- Record a Voice Message and save it.
+![Record](/doc/recorder.jpg "Record")
 - Upload a Picture or a File and save it.
+![Fileupload](/doc/fileupload.jpg "Fileupload")
 - Edit a HTML Text and save it.
+![Editor](/doc/editor.jpg "Editor")
 - Manage Users and Roles.
+![User](/doc/user.jpg "User")
 
 At the moment all User sees the documents of all other users.
 
