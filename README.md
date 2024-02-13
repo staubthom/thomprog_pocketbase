@@ -48,25 +48,25 @@ You can log in with the following credentials:
 
 ![Login](/doc/login.jpg "Login")
 
-Then you will see the following:
+### Then you will see the following:
 ![Thomprog](/doc/thomprog.jpg "Thomprog")
 
-Now you can start to create your ToDo's.
+### Now you can start to create your ToDo's.
 ![ToDo](/doc/todo.jpg "ToDo")
 
-Test a Write a Message. 
+### Write a Message. 
 ![Chat](/doc/chat.jpg "Chat")
 
-Record a Voice Message and save it.
+### Record a Voice Message and save it.
 ![Record](/doc/recorder.jpg "Record")
 
-Upload a Picture or a File and save it.
+### Upload a Picture or a File and save it.
 ![Fileupload](/doc/fileuplaod.jpg "Fileupload")
 
-Edit a HTML Text and save it.
+### Edit a HTML Text and save it.
 ![Editor](/doc/editor.jpg "Editor")
 
-Manage Users and Roles.
+### Manage Users and Roles.
 ![User](/doc/user.jpg "User")
 
 At the moment all User sees the documents of all other users.
