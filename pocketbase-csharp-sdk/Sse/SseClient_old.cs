@@ -1,4 +1,4 @@
-﻿using pocketbase_csharp_sdk.Models;
+﻿﻿using pocketbase_csharp_sdk.Models;
 using System.Text;
 
 namespace pocketbase_csharp_sdk.Sse
@@ -62,25 +62,17 @@ namespace pocketbase_csharp_sdk.Sse
 
         private async Task ConnectEventStreamAsync(CancellationToken token)
         {
-           
-             using var client = new HttpClient();
-              var request = new HttpRequestMessage(HttpMethod.Get, "stream")
-                    {
-                        RequestUri = new Uri("http://127.0.0.1:8090/api/realtime")
-                    };
-
-            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            Console.WriteLine(response);
-           
-          
+            var httpClient = new HttpClient
+            {
+                Timeout = Timeout.InfiniteTimeSpan
+            };
+            httpClient.DefaultRequestHeaders.ConnectionClose = false;
             try
             {
 
-                //var response = await httpClient.GetAsync(client.BuildUrl(BasePath).ToString(),
-                //                                         HttpCompletionOption.ResponseHeadersRead,
-                //                                         token);
-               
-
+                var response = await httpClient.GetAsync(client.BuildUrl(BasePath).ToString(),
+                                                         HttpCompletionOption.ResponseHeadersRead,
+                                                         token);
                 if (!response.IsSuccessStatusCode)
                     throw new Exception("Unable to connect the stream");
 
@@ -89,50 +81,31 @@ namespace pocketbase_csharp_sdk.Sse
                 if (!isTextEventStream)
                     throw new InvalidOperationException("Invalid resource content type");
 
-                //TODO this never completes
-                Console.WriteLine(response);
-
-                Stream? stream = null;
-                //var stream =await response.Content.ReadAsStreamAsync();
-                var buffer = new byte[8];
-                //Console.WriteLine("Connected SseClient Zeile 89");    
-
+                var stream = await response.Content.ReadAsStreamAsync(token);
+                var buffer = new byte[4096];
                 while (!token.IsCancellationRequested)
                 {
-                     Console.WriteLine("Connected SseClient Zeile 94");
-                    stream = await response.Content.ReadAsStreamAsync();
-                    
-                     Console.WriteLine("Connected SseClient Zeile 96");
-                    if (stream.CanRead)
+                    var readCount = await stream.ReadAsync(buffer, token);
+                    if (readCount > 0)
                     {
-
-
-                        Console.WriteLine("Connected SseClient Zeile 101");
-                        var readCount = await stream.ReadAsync(buffer, token);
-
-                        Console.WriteLine(readCount);
-                        if (readCount > 0)
+                        var data = Encoding.UTF8.GetString(buffer, 0, readCount);
+                        var sseMessage = await SseMessage.FromReceivedMessageAsync(data);
+                        if (sseMessage != null)
                         {
-                            var data = Encoding.UTF8.GetString(buffer, 0, readCount);
-                            var sseMessage = await SseMessage.FromReceivedMessageAsync(data);
-                            if (sseMessage != null)
+                            if (sseMessage.Id != null && sseMessage.Event == "PB_CONNECT")
                             {
-                                if (sseMessage.Id != null && sseMessage.Event == "PB_CONNECT")
-                                {
-                                    Id = sseMessage.Id;
-                                    IsConnected = true;
-                                    Console.WriteLine(sseMessage.Id);
-                                }
-                                await CallbackAsync(sseMessage);
+                                Id = sseMessage.Id;
+                                IsConnected = true;
                             }
+                            await CallbackAsync(sseMessage);
                         }
-                        await Task.Delay(125, token);
                     }
+                    await Task.Delay(125, token);
                 }
             }
             finally
             {
-                client.Dispose();
+                httpClient.Dispose();
                 IsConnected = false;
                 Id = null;
             }

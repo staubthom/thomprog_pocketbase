@@ -15,13 +15,12 @@ using System.Net.Http.Headers;
 using System.Net;
 
 
-
 namespace pocketbase_csharp_sdk.Services;
-
+                      
 public abstract class RealtimeServiceBase : IRealtimeServiceBase
 {
 
-
+   
 
     public HttpClient _httpcleint;
     public string newLineChar { get; set; }
@@ -30,8 +29,6 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     public string _cleintId = "";
     public bool cancelled;
     public string baseUrl { get; set; }
-
-  
 
     public RealtimeServiceBase(HttpClient httpClient, string baseUrl)
     {
@@ -52,7 +49,7 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     /// </summary>
     /// <param name="topic">topic to subscribe to</param>
     /// <param name="callback">callback to be run when given topic has been altered</param>
-    public void Subscribe(string topic, Action<RealtimeEventArgs> callback, string collectioName, string token)
+    public void Subscribe(string topic, Action<RealtimeEventArgs> callback, string collectioName)
     {
         if (string.IsNullOrWhiteSpace(topic))
         {
@@ -66,7 +63,7 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
             //Todo here for each topic need call related callbacks
             subscriptions.Add(topic, new List<Action<RealtimeEventArgs>>());
             subscriptions[topic].Add(callback);
-            Dowork(token);
+            Dowork();
 
         }
         else if (subscriptions.TryGetValue(topic, out List<Action<RealtimeEventArgs>>? value))
@@ -106,8 +103,8 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     /// <returns></returns>
     public async void AddRemoveTopics()
     {
-
-
+        
+        
         await _httpcleint.PostAsJsonAsync(baseUrl + "api/realtime", new
         {
             clientId = _cleintId,
@@ -120,7 +117,7 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
         subscriptions[args.@event].ForEach((clb) => clb.Invoke(args));
     }
 
-    public virtual void Dowork(string token)
+    public virtual void Dowork()
     {
         try
         {
@@ -128,22 +125,26 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
             {
                 try
                 {
-                    
+                   //q how to add authorization header to the request?
+                   //a you can add the authorization header to the request by adding the below code
+                   //request.Headers.Add
+
+
+
+
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "stream")
                     {
-                        RequestUri = new Uri(baseUrl + "api/realtime"),
-
+                        RequestUri = new Uri(baseUrl + "api/realtime"),                         
+                     
                     };
                     // with the new feature of IAsyncEnumerable in .net 6 we can use the below code to read the stream
                     //https://www.tpeczek.com/2021/12/aspnet-core-6-and-iasyncenumerable.html
                     //otherwise it is waiting a long time to get the response
-                    
-                   
                     request.SetBrowserResponseStreamingEnabled(true);
 
 
-
-                    await ReadSSEStream(request, token);
+                   
+                       await ReadSSEStream(request);
                 }
                 catch (Exception ex)
                 {
@@ -164,42 +165,45 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     }
 
 
-    public async Task ReadSSEStream(HttpRequestMessage request, string token)
+    public async Task ReadSSEStream(HttpRequestMessage request)
     {
 
-        //private CancellationTokenSource? tokenSource = null;
         using var client = new HttpClient();
-  
-        client.DefaultRequestHeaders.Add("Authorization", token);
+        //q how to get my token from the local storage and add it to the request header?
+        //a you can get the token from the local storage and add it to the request header by adding the below code
+        //var token = await _localStorage.GetItemAsync<string>("token");
+        //
+       
+        client.DefaultRequestHeaders.Add("Authorization", "Bearer " + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJfcGJfdXNlcnNfYXV0aF8iLCJleHAiOjE3MDg5NTExNjMsImlkIjoibGh1YmMzMG5lNHU3NzhpIiwidHlwZSI6ImF1dGhSZWNvcmQifQ.3AcoNgvp-QRRpxljUbRhnEgaU9iu9RaqewqD2_a9iU8");
 
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-         var isTextEventStream = response.Content.Headers.ContentType?.MediaType == "text/event-stream";
-
-                if (!isTextEventStream)
-                    throw new InvalidOperationException("Invalid resource content type");
-
-
+       
+        
         bool prevNewLine = false;
         var _responseContent = "";
 
         Stream? stream = null;
         byte[] bytes = new byte[1];
         var newlineChar = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\n" : Environment.NewLine;
-
-
+        
+        
         while (!cancelled)
         {
             try
-            {              
+            {
                 
-                
+               
+               
                 stream = await response.Content.ReadAsStreamAsync();
+               
+
+
                 if (stream.CanRead)
                 {
                     await stream.ReadAsync(bytes);
                     string? letter = Encoding.UTF8.GetString(bytes);
                     _responseContent += letter;
-
+                   
 
 
                     if (letter == newlineChar && prevNewLine == true)
@@ -251,7 +255,7 @@ public abstract class RealtimeServiceBase : IRealtimeServiceBase
     /// <param name="data">Data read from the stream</param>
     public void ProcessEvents(string data)
     {
-
+        
         if (data == "")
             return;
 

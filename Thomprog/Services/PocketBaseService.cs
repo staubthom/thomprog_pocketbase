@@ -259,9 +259,10 @@ namespace Thomprog.Services
 
         //Realtime
 
-        public void Subscribe(string tablename,string topic, Action<RealtimeEventArgs> callbackFun)        
+        public void Subscribe(string tablename,string topic, Action<RealtimeEventArgs> callbackFun, string token)        
         {            
-             _PocketBase.Collection(tablename).Subscribe(topic, callbackFun); 
+             
+            _PocketBase.Collection(tablename).Subscribe(topic, callbackFun,token ); 
         }
 
        

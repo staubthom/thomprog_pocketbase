@@ -324,8 +324,9 @@ namespace Thomprog.Services
 
         public async Task Realtime(string tablename, string topic, Action<RealtimeEventArgs> callbackFun) 
         {
-            await authRefresh();
-             _client.Subscribe(tablename,topic, callbackFun);
+            //await authRefresh();
+            var token = await _localStorage.GetItemAsync<string>("token");
+            _client.Subscribe(tablename,topic, callbackFun, token);
         }
 
        

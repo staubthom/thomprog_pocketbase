@@ -50,11 +50,11 @@ namespace pocketbase_csharp_sdk.Services
 
 
 
-        public void Subscribe(string topic, Action<RealtimeEventArgs> callbackFun)
+        public void Subscribe(string topic, Action<RealtimeEventArgs> callbackFun, string token)
         {
            
 
-            _realtimeService.Subscribe(topic, callbackFun, _collectionName);
+            _realtimeService.Subscribe(topic, callbackFun, _collectionName, token);
         }
 
 
