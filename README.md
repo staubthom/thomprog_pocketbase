@@ -1,4 +1,4 @@
-# Thomprog  :construction:
+# Thomprog C# Blazor Pocketbase :construction:
 This programme was created purely out of curiosity about how to create a frontend with [MudBlazor](https://mudblazor.com/) and [Pocketbase](https://pocketbase.io/). As I couldn't find anything on the net that met my requirements, I ended up programming something myself. The Thomprog is available to anyone who wants to continue using it. Documentation will follow here shortly. 
 ## Start Backend :crystal_ball:
   
