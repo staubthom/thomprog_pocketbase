@@ -37,6 +37,7 @@ This starts the frontend you can now access the frontend via the following URL:
 ![Frontend](/doc/frontend.jpg "Frontend")
 
 You can log in with the following credentials:
+
     Admin
     Username: demo
     Password: demo12345!
@@ -50,17 +51,22 @@ You can log in with the following credentials:
 Then you will see the following:
 ![Thomprog](/doc/thomprog.jpg "Thomprog")
 
-- Now you can start to create your ToDo's.
+Now you can start to create your ToDo's.
 ![ToDo](/doc/todo.jpg "ToDo")
-- Test a Write a Message. 
+
+Test a Write a Message. 
 ![Chat](/doc/chat.jpg "Chat")
-- Record a Voice Message and save it.
+
+Record a Voice Message and save it.
 ![Record](/doc/recorder.jpg "Record")
-- Upload a Picture or a File and save it.
-![Fileupload](/doc/fileupload.jpg "Fileupload")
-- Edit a HTML Text and save it.
+
+Upload a Picture or a File and save it.
+![Fileupload](/doc/fileuplaod.jpg "Fileupload")
+
+Edit a HTML Text and save it.
 ![Editor](/doc/editor.jpg "Editor")
-- Manage Users and Roles.
+
+Manage Users and Roles.
 ![User](/doc/user.jpg "User")
 
 At the moment all User sees the documents of all other users.
