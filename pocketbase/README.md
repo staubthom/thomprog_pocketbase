@@ -8,8 +8,8 @@ Change to the pocketbase directory in the terminal and execute the following com
 └─ Admin UI: http://127.0.0.1:8090/_/
 
   You can log in as follows
-**Username:** admin@admin.com 
-**Password:** Admin1234!
+**Username:** admin@demo.com 
+**Password:** admin12345!
 
 -------------------------------------------------------
 ## As Docker
